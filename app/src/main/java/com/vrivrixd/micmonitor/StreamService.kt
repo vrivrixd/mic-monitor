@@ -53,7 +53,7 @@ class StreamService : Service(), MicServer.Listener {
 
     override fun onDestroy() {
         releaseEverything()
-        instance = null
+        if (instance === this) instance = null
         super.onDestroy()
     }
 
@@ -159,8 +159,9 @@ class StreamService : Service(), MicServer.Listener {
     }
 
     private fun shutdown() {
+        val wasRunning = server != null
         releaseEverything()
-        StreamState.reset()
+        if (wasRunning) StreamState.reset()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {

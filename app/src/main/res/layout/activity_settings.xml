@@ -41,7 +41,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:contentDescription="@string/label_port"
+                android:hint="@string/label_port"
                 android:imeOptions="actionDone"
                 android:inputType="number"
                 android:maxLength="5"
@@ -102,6 +102,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:minHeight="48dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/batteryButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:minHeight="48dp"
+                android:text="@string/battery_action" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
