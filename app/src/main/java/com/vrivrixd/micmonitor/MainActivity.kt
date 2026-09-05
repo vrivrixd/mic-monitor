@@ -49,6 +49,13 @@ class MainActivity : AppCompatActivity() {
         StreamState.state.observe(this) { render(it) }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Se o microfone ficou com outro aplicativo, a volta para esta tela e uma
+        // boa hora para tentar de novo, porque a pessoa esta olhando.
+        if (StreamState.current.paused) StreamService.retryMicrophone()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         toggleItem = menu.findItem(R.id.menu_toggle)
@@ -109,7 +116,11 @@ class MainActivity : AppCompatActivity() {
         updateToggleTitle(snapshot.running)
 
         binding.statusText.setText(
-            if (snapshot.running) R.string.status_running else R.string.status_stopped
+            when {
+                snapshot.running && snapshot.paused -> R.string.status_paused
+                snapshot.running -> R.string.status_running
+                else -> R.string.status_stopped
+            }
         )
 
         val showAddress = snapshot.running
@@ -133,6 +144,7 @@ class MainActivity : AppCompatActivity() {
 
         val warning = when {
             snapshot.error != null -> snapshot.error
+            snapshot.running && snapshot.paused -> getString(R.string.paused_reason)
             snapshot.running && snapshot.stereoRequested &&
                 snapshot.stereoVerified && !snapshot.stereoReal ->
                 getString(R.string.warn_stereo_fake)

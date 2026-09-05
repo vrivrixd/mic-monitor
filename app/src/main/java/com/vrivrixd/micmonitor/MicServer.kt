@@ -128,6 +128,13 @@ class MicServer(
     // ---------------------------------------------------------------- estatico
 
     private fun serveStatic(output: OutputStream, path: String) {
+        if (path == "/status") {
+            // A pagina consulta isto antes de comecar, para saber se a vaga esta livre
+            // sem precisar ocupa-la.
+            val json = JSONObject().put("busy", hasClient()).toString().toByteArray(Charsets.UTF_8)
+            writeResponse(output, "200 OK", "application/json; charset=utf-8", json)
+            return
+        }
         val asset = when (path) {
             "/", "/index.html" -> "web/index.html"
             "/style.css" -> "web/style.css"

@@ -11,6 +11,8 @@
 
     <string name="status_running">Status: Em execução</string>
     <string name="status_stopped">Status: Parado</string>
+    <string name="status_paused">Status: Pausado</string>
+    <string name="paused_reason">Outro aplicativo do celular está usando o microfone. A transmissão volta sozinha quando ele terminar.</string>
     <string name="address_intro">Conecte-se para ouvir o microfone pelo seguinte endereço:</string>
     <string name="address_unavailable">Endereço indisponível. Verifique se o celular está conectado a uma rede Wi-Fi.</string>
 
@@ -27,8 +29,8 @@
     <string name="label_buffer">Buffer de áudio</string>
 
     <string name="mic_default">Padrão do sistema</string>
-    <string name="mic_front">Frontal, o mesmo das chamadas</string>
-    <string name="mic_camera">Da câmera, geralmente o traseiro</string>
+    <string name="mic_front">Microfone frontal</string>
+    <string name="mic_camera">Microfone traseiro</string>
 
     <string name="buffer_60">Muito curto, 60 milissegundos</string>
     <string name="buffer_100">Curto, 100 milissegundos</string>
@@ -47,11 +49,12 @@
     <string name="about_body">Mic Monitor, versão %1$s.\n\nAutor: Vitor Bruski.</string>
 
     <string name="help_title">Ajuda</string>
-    <string name="help_body">O Mic Monitor faz o som do microfone do seu celular tocar em outro aparelho, como um computador, usando a mesma rede sem fio. Você não precisa instalar nada no computador.\n\nPara usar:\n\n1. Deixe o celular e o computador ligados na mesma rede sem fio.\n\n2. Toque no botão Iniciar. O celular mostra um endereço na tela, parecido com o de um site.\n\n3. Digite esse endereço no navegador do computador.\n\n4. Na página que abrir, clique no botão Iniciar. O som começa e os ajustes aparecem. Antes desse clique nada é transmitido, e o celular continua livre para outro computador.\n\nNa página do computador você pode aumentar ou diminuir o volume do microfone, calar o som sem desligar a transmissão, escolher qual microfone usar e ligar o estéreo. O que você mudar lá também muda aqui, e o contrário também vale.\n\nSó um computador ouve de cada vez. Quando você fecha a página, outro pode entrar.\n\nO estéreo separa o som entre o lado esquerdo e o direito. Nem todo celular sabe fazer isso. Quando o seu não souber, o aplicativo avisa e continua com o som normal.\n\nO buffer de áudio é o tempinho que o computador guarda de som antes de tocar. Se você ouvir cortes ou chiados, escolha um buffer maior. Se quiser o som chegando mais rápido, escolha um menor.\n\nA porta de conexão pode ficar vazia. Ela só muda o número no fim do endereço, e serve para quando outro programa já estiver usando o mesmo número.\n\nPara escolher em qual caixa de som ou fone o áudio vai sair, use o controle de volume do próprio computador.\n\nSe a transmissão parar sozinha quando você sai do aplicativo, use o botão de desativar a otimização de bateria, no fim das configurações. O celular passa a gastar um pouco mais de carga, mas deixa a transmissão em paz.</string>
+    <string name="help_body">O Mic Monitor faz o som do microfone do seu celular tocar em outro aparelho, como um computador, usando a mesma rede sem fio. Você não precisa instalar nada no computador.\n\nPara usar:\n\n1. Deixe o celular e o computador ligados na mesma rede sem fio.\n\n2. Toque no botão Iniciar. O celular mostra um endereço na tela, parecido com o de um site.\n\n3. Digite esse endereço no navegador do computador.\n\n4. Na página que abrir, clique no botão Iniciar. O som começa e os ajustes aparecem. Antes desse clique nada é transmitido, e o celular continua livre para outro computador.\n\nNa página do computador você pode aumentar ou diminuir o volume do microfone, calar o som sem desligar a transmissão, escolher qual microfone usar e ligar o estéreo. O que você mudar lá também muda aqui, e o contrário também vale.\n\nSó um computador ouve de cada vez. Quando você fecha a página, outro pode entrar.\n\nSe você gravar um áudio em outro aplicativo, ou receber uma chamada, o Mic Monitor solta o microfone na hora e o outro aplicativo grava normalmente. A transmissão fica pausada e volta sozinha assim que ele terminar.\n\nO estéreo separa o som entre o lado esquerdo e o direito. Nem todo celular sabe fazer isso. Quando o seu não souber, o aplicativo avisa e continua com o som normal.\n\nO buffer de áudio é o tempinho que o computador guarda de som antes de tocar. Se você ouvir cortes ou chiados, escolha um buffer maior. Se quiser o som chegando mais rápido, escolha um menor.\n\nA porta de conexão pode ficar vazia. Ela só muda o número no fim do endereço, e serve para quando outro programa já estiver usando o mesmo número.\n\nPara escolher em qual caixa de som ou fone o áudio vai sair, use o controle de volume do próprio computador.\n\nSe a transmissão parar sozinha quando você sai do aplicativo, use o botão de desativar a otimização de bateria, no fim das configurações. O celular passa a gastar um pouco mais de carga, mas deixa a transmissão em paz.</string>
 
     <string name="notif_channel_name">Transmissão em andamento</string>
     <string name="notif_title">Mic Monitor em execução</string>
     <string name="notif_text">Transmitindo o microfone em %1$s</string>
+    <string name="notif_paused">Pausado. Outro aplicativo está usando o microfone.</string>
 
     <string name="perm_mic_needed">O aplicativo precisa da permissão de microfone para funcionar.</string>
     <string name="error_port_busy">Não foi possível abrir a porta %1$d. Ela pode estar em uso. Escolha outra nas configurações.</string>
