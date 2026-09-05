@@ -12,6 +12,7 @@ object StreamState {
         val running: Boolean = false,
         val address: String? = null,
         val clientConnected: Boolean = false,
+        val paused: Boolean = false,
         val stereoRequested: Boolean = false,
         val stereoReal: Boolean = false,
         val stereoVerified: Boolean = false,

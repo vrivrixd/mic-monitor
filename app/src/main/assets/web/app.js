@@ -40,6 +40,7 @@
   var started = false;
   var shuttingDown = false;
   var suppressUntil = 0;
+  var statusTimer = null;
 
   /* --------------------------------------------------------------------- audio
    *
@@ -217,7 +218,11 @@
 
   function describeStream() {
     if (!config) return;
-    setStatus('Ouvindo...', false);
+    if (config.paused) {
+      setStatus('Pausado. Outro aplicativo do celular está usando o microfone.', false);
+    } else {
+      setStatus('Ouvindo...', false);
+    }
   }
 
   function send(message) {
@@ -341,6 +346,7 @@
   function start() {
     if (started) return;
     started = true;
+    if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
     el.enable.hidden = true;
     setStatus('Conectando ao celular.', false);
     connect();
@@ -348,11 +354,38 @@
 
   el.enable.addEventListener('click', start);
 
+  /*
+   * Antes de oferecer o botao a pagina pergunta ao celular se a vaga esta livre.
+   * A consulta e um pedido comum, entao nao tira o lugar de quem ja ouve.
+   */
+  function checkStatus() {
+    if (started) return;
+    fetch('/status', { cache: 'no-store' }).then(function (response) {
+      return response.json();
+    }).then(function (info) {
+      if (started) return;
+      if (info.busy) {
+        el.enable.hidden = true;
+        setStatus('Outro computador já está ouvindo.', true);
+      } else {
+        el.enable.hidden = false;
+        setStatus('Clique para começar a ouvir.', false);
+      }
+    }, function () {
+      if (started) return;
+      el.enable.hidden = false;
+      setStatus('Clique para começar a ouvir.', false);
+    });
+  }
+
   window.addEventListener('beforeunload', function () {
     if (ws) { try { ws.close(); } catch (e) {} }
   });
 
   el.controls.hidden = true;
-  el.enable.hidden = false;
-  setStatus('Clique para começar a ouvir.', false);
+  el.enable.hidden = true;
+  setStatus('Carregando...', false);
+  checkStatus();
+  /* A vaga pode abrir ou fechar enquanto a pessoa olha a pagina parada. */
+  statusTimer = setInterval(checkStatus, 3000);
 })();
