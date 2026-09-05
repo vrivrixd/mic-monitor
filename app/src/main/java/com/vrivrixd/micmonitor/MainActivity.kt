@@ -21,6 +21,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    /** O botao iniciar e parar fica na barra, ao lado do menu de mais opcoes. */
+    private var toggleItem: MenuItem? = null
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grants ->
@@ -37,21 +40,23 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-
-        // O nome do aplicativo e o cabecalho da tela para o leitor de tela.
         ViewCompat.setAccessibilityHeading(binding.statusText, true)
-
-        binding.toggleButton.setOnClickListener { onToggle() }
 
         StreamState.state.observe(this) { render(it) }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        toggleItem = menu.findItem(R.id.menu_toggle)
+        updateToggleTitle(StreamState.current.running)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.menu_toggle -> {
+            onToggle()
+            true
+        }
         R.id.menu_settings -> {
             startActivity(Intent(this, SettingsActivity::class.java))
             true
@@ -91,10 +96,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateToggleTitle(running: Boolean) {
+        toggleItem?.setTitle(if (running) R.string.action_stop else R.string.action_start)
+    }
+
     private fun render(snapshot: StreamState.Snapshot) {
-        binding.toggleButton.setText(
-            if (snapshot.running) R.string.action_stop else R.string.action_start
-        )
+        updateToggleTitle(snapshot.running)
+
         binding.statusText.setText(
             if (snapshot.running) R.string.status_running else R.string.status_stopped
         )
@@ -120,7 +128,8 @@ class MainActivity : AppCompatActivity() {
 
         val warning = when {
             snapshot.error != null -> snapshot.error
-            snapshot.running && snapshot.stereoRequested && snapshot.stereoVerified && !snapshot.stereoReal ->
+            snapshot.running && snapshot.stereoRequested &&
+                snapshot.stereoVerified && !snapshot.stereoReal ->
                 getString(R.string.warn_stereo_fake)
             else -> null
         }

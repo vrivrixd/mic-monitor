@@ -218,11 +218,18 @@ class StreamService : Service(), MicServer.Listener {
     override fun onCommand(command: JSONObject) {
         when (command.optString("type")) {
             "setGain" -> {
-                val db = command.optDouble("gainDb", 0.0).toFloat()
-                prefs.gainDb = db
+                prefs.gainPercent = command.optInt("gainPercent", Prefs.DEFAULT_GAIN_PERCENT)
                 engine?.gainDb = prefs.gainDb
                 StreamState.update { it.copy(configRevision = it.configRevision + 1) }
                 server?.sendConfig()
+            }
+            "setBuffer" -> {
+                val ms = command.optInt("bufferMs", Prefs.DEFAULT_BUFFER_MS)
+                if (ms != prefs.bufferMs) {
+                    prefs.bufferMs = ms
+                    StreamState.update { it.copy(configRevision = it.configRevision + 1) }
+                    server?.sendConfig()
+                }
             }
             "setSource" -> {
                 val key = command.optString("source", MicSource.DEFAULT)
@@ -256,9 +263,8 @@ class StreamService : Service(), MicServer.Listener {
             .put("streamId", streamId)
             .put("sampleRate", running?.sampleRate ?: 48000)
             .put("channels", running?.channels ?: 1)
-            .put("gainDb", prefs.gainDb.toDouble())
-            .put("minGainDb", Prefs.MIN_GAIN_DB.toDouble())
-            .put("maxGainDb", Prefs.MAX_GAIN_DB.toDouble())
+            .put("gainPercent", prefs.gainPercent)
+            .put("bufferMs", prefs.bufferMs)
             .put("source", prefs.micSource)
             .put("stereo", prefs.stereo)
             .put("stereoKnown", stereoKnown)

@@ -6,11 +6,17 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.SeekBar
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import com.vrivrixd.micmonitor.databinding.ActivitySettingsBinding
-import java.util.Locale
 
-/** Tela de configuracoes. Cada alteracao vale na hora, inclusive com a transmissao ligada. */
+/**
+ * Tela de configuracoes. Cada alteracao vale na hora, inclusive com a transmissao ligada.
+ *
+ * Cada opcao e um unico ponto de parada para o leitor de tela. Os rotulos visiveis
+ * ficam fora da arvore de acessibilidade e o nome vai na propria opcao.
+ */
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
@@ -33,6 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         setupGain()
         setupMic()
         setupStereo()
+        setupBuffer()
 
         loadFromPrefs()
 
@@ -56,17 +63,17 @@ class SettingsActivity : AppCompatActivity() {
                 if (updating) return
                 val text = s?.toString()?.trim().orEmpty()
                 if (text.isEmpty()) {
-                    binding.portLayout.error = null
+                    binding.portInput.error = null
                     prefs.portText = ""
                     StreamService.applyPreferences(false)
                     return
                 }
                 val value = text.toIntOrNull()
                 if (value == null || value < Prefs.MIN_PORT || value > Prefs.MAX_PORT) {
-                    binding.portLayout.error = getString(R.string.error_port_range)
+                    binding.portInput.error = getString(R.string.error_port_range)
                     return
                 }
-                binding.portLayout.error = null
+                binding.portInput.error = null
                 prefs.portText = text
                 StreamService.applyPreferences(false)
             }
@@ -76,37 +83,25 @@ class SettingsActivity : AppCompatActivity() {
     // -------------------------------------------------------------------- ganho
 
     private fun setupGain() {
-        binding.gainSlider.valueFrom = Prefs.MIN_GAIN_DB
-        binding.gainSlider.valueTo = Prefs.MAX_GAIN_DB
-        binding.gainSlider.setLabelFormatter { value -> formatGain(value) }
-        binding.gainSlider.addOnChangeListener { _, value, fromUser ->
-            showGain(value)
-            if (updating || !fromUser) return@addOnChangeListener
-            prefs.gainDb = value
-            StreamService.applyPreferences(false)
-        }
-    }
+        binding.gainSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(bar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (updating || !fromUser) return
+                prefs.gainPercent = progress
+                StreamService.applyPreferences(false)
+            }
 
-    private fun showGain(value: Float) {
-        val text = formatGain(value)
-        binding.gainValue.text = text
-        binding.gainSlider.contentDescription = getString(R.string.gain_desc, text.removeSuffix(" dB"))
-    }
-
-    private fun formatGain(value: Float): String {
-        val rounded = Math.round(value)
-        return getString(R.string.gain_value, String.format(Locale.getDefault(), "%d", rounded))
+            override fun onStartTrackingTouch(bar: SeekBar?) = Unit
+            override fun onStopTrackingTouch(bar: SeekBar?) = Unit
+        })
     }
 
     // --------------------------------------------------------------- microfone
 
     private fun setupMic() {
-        val labels = MicSource.ALL.map { getString(MicSource.labelRes(it)) }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.micSpinner.adapter = adapter
+        binding.micSpinner.adapter = adapterOf(MicSource.ALL.map { getString(MicSource.labelRes(it)) })
         binding.micSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                describe(binding.micSpinner, R.string.label_mic)
                 if (updating) return
                 val key = MicSource.ALL[position]
                 if (key == prefs.micSource) return
@@ -129,7 +124,38 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    // ------------------------------------------------------------------ buffer
+
+    private fun setupBuffer() {
+        binding.bufferSpinner.adapter =
+            adapterOf(Prefs.BUFFER_OPTIONS.map { getString(Prefs.bufferLabelRes(it)) })
+        binding.bufferSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                describe(binding.bufferSpinner, R.string.label_buffer)
+                if (updating) return
+                val ms = Prefs.BUFFER_OPTIONS[position]
+                if (ms == prefs.bufferMs) return
+                prefs.bufferMs = ms
+                StreamService.applyPreferences(false)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+    }
+
     // ------------------------------------------------------------------ estado
+
+    private fun adapterOf(labels: List<String>): ArrayAdapter<String> {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        return adapter
+    }
+
+    /** O nome da opcao e o valor escolhido saem em um anuncio so. */
+    private fun describe(spinner: Spinner, labelRes: Int) {
+        val value = spinner.selectedItem as? String ?: return
+        spinner.contentDescription = getString(labelRes) + ", " + value
+    }
 
     private fun loadFromPrefs() {
         updating = true
@@ -138,11 +164,15 @@ class SettingsActivity : AppCompatActivity() {
             if (binding.portInput.text?.toString() != portText) {
                 binding.portInput.setText(portText)
             }
-            binding.gainSlider.value = prefs.gainDb.coerceIn(Prefs.MIN_GAIN_DB, Prefs.MAX_GAIN_DB)
-            showGain(binding.gainSlider.value)
+            binding.gainSeek.progress = prefs.gainPercent
             binding.micSpinner.setSelection(MicSource.ALL.indexOf(prefs.micSource).coerceAtLeast(0))
             binding.stereoCheck.isChecked = prefs.stereo
             binding.micSpinner.isEnabled = !prefs.stereo
+            binding.bufferSpinner.setSelection(
+                Prefs.BUFFER_OPTIONS.indexOf(prefs.bufferMs).coerceAtLeast(0)
+            )
+            describe(binding.micSpinner, R.string.label_mic)
+            describe(binding.bufferSpinner, R.string.label_buffer)
         } finally {
             updating = false
         }

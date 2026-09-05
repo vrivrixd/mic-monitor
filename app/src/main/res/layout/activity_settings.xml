@@ -29,55 +29,47 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/portLayout"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/label_port"
-                app:helperText="@string/hint_port"
-                app:helperTextEnabled="true">
+                android:importantForAccessibility="no"
+                android:text="@string/label_port"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/portInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:imeOptions="actionDone"
-                    android:inputType="number"
-                    android:maxLength="5" />
-            </com.google.android.material.textfield.TextInputLayout>
+            <EditText
+                android:id="@+id/portInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:contentDescription="@string/label_port"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="5"
+                android:minHeight="48dp"
+                android:singleLine="true" />
 
             <TextView
-                android:id="@+id/gainLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:labelFor="@+id/gainSlider"
+                android:importantForAccessibility="no"
                 android:text="@string/label_gain"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-            <com.google.android.material.slider.Slider
-                android:id="@+id/gainSlider"
+            <SeekBar
+                android:id="@+id/gainSeek"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:contentDescription="@string/label_gain"
-                android:stepSize="1"
-                android:valueFrom="-20"
-                android:valueTo="20" />
+                android:max="100"
+                android:minHeight="48dp" />
 
             <TextView
-                android:id="@+id/gainValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:focusable="true"
-                android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-            <TextView
-                android:id="@+id/micLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:labelFor="@+id/micSpinner"
+                android:importantForAccessibility="no"
                 android:text="@string/label_mic"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
@@ -86,7 +78,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:contentDescription="@string/label_mic"
                 android:minHeight="48dp" />
 
             <com.google.android.material.checkbox.MaterialCheckBox
@@ -100,10 +91,17 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:focusable="true"
-                android:text="@string/stereo_help"
-                android:textAppearance="?attr/textAppearanceBodySmall" />
+                android:layout_marginTop="28dp"
+                android:importantForAccessibility="no"
+                android:text="@string/label_buffer"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+            <Spinner
+                android:id="@+id/bufferSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:minHeight="48dp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

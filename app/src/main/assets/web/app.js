@@ -3,9 +3,8 @@
   'use strict';
 
   var MOBILE = /Android|webOS|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  var TARGET_MS = 140;   /* atraso alvo do amortecedor */
-  var MAX_MS = 420;      /* acima disso o audio antigo e descartado */
   var SCRIPT_FRAMES = 2048;
+  var DEFAULT_BUFFER_MS = 150;
 
   var el = {
     main: document.getElementById('main'),
@@ -13,15 +12,13 @@
     status: document.getElementById('status'),
     enable: document.getElementById('enableAudio'),
     outputField: document.getElementById('outputField'),
-    outputHint: document.getElementById('outputHint'),
     output: document.getElementById('output'),
     gain: document.getElementById('gain'),
-    gainValue: document.getElementById('gainValue'),
     mute: document.getElementById('mute'),
     mic: document.getElementById('mic'),
-    micHint: document.getElementById('micHint'),
     stereo: document.getElementById('stereo'),
     stereoHint: document.getElementById('stereoHint'),
+    buffer: document.getElementById('buffer'),
     disconnect: document.getElementById('disconnect')
   };
 
@@ -38,19 +35,25 @@
   var queue = null;
   var usingWorklet = false;
   var config = null;
+  var bufferMs = DEFAULT_BUFFER_MS;
   var shuttingDown = false;
   var suppressUntil = 0;
 
   /* --------------------------------------------------------------- amortecedor */
 
-  function PcmQueue(target, max) {
+  function PcmQueue() {
     this.chunks = [];
     this.queued = 0;
     this.offset = 0;
     this.priming = true;
+    this.target = 0;
+    this.max = 0;
+  }
+
+  PcmQueue.prototype.configure = function (target, max) {
     this.target = target;
     this.max = max;
-  }
+  };
 
   PcmQueue.prototype.push = function (left, right) {
     this.chunks.push([left, right]);
@@ -92,6 +95,22 @@
 
   /* ---------------------------------------------------------------------- audio */
 
+  function bufferFrames() {
+    var rate = ctx ? ctx.sampleRate : 48000;
+    var target = Math.round(rate * bufferMs / 1000);
+    var max = Math.round(target * 2.5) + Math.round(rate * 0.06);
+    return { target: target, max: max };
+  }
+
+  function applyBuffer() {
+    var frames = bufferFrames();
+    if (usingWorklet && node) {
+      node.port.postMessage({ type: 'configure', target: frames.target, max: frames.max });
+    } else if (queue) {
+      queue.configure(frames.target, frames.max);
+    }
+  }
+
   function teardownAudio() {
     if (node) {
       try { node.disconnect(); } catch (e) {}
@@ -101,6 +120,7 @@
       try { muteNode.disconnect(); } catch (e) {}
     }
     if (ctx) {
+      ctx.onstatechange = null;
       try { ctx.close(); } catch (e) {}
     }
     node = null;
@@ -116,7 +136,7 @@
     var Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) {
       setStatus('Este navegador não tem suporte à Web Audio API.', true);
-      return Promise.resolve();
+      return;
     }
 
     try {
@@ -124,9 +144,7 @@
     } catch (e) {
       ctx = new Ctor();
     }
-
-    var target = Math.round(ctx.sampleRate * TARGET_MS / 1000);
-    var max = Math.round(ctx.sampleRate * MAX_MS / 1000);
+    ctx.onstatechange = refreshAudioGate;
 
     muteNode = ctx.createGain();
     muteNode.gain.value = el.mute.checked ? 0 : 1;
@@ -135,29 +153,28 @@
     /* O caminho moderno so existe em conexao segura. Sem ele, o gerador classico
        cumpre o mesmo papel com um pouco mais de atraso. */
     if (ctx.audioWorklet) {
-      return ctx.audioWorklet.addModule('/worklet.js').then(function () {
+      ctx.audioWorklet.addModule('/worklet.js').then(function () {
         node = new AudioWorkletNode(ctx, 'mic-monitor-player', {
           numberOfInputs: 0,
           numberOfOutputs: 1,
           outputChannelCount: [2]
         });
-        node.port.postMessage({ type: 'configure', target: target, max: max });
         node.connect(muteNode);
         usingWorklet = true;
         afterAudioReady();
-      }).catch(function () {
-        buildScriptProcessor(target, max);
+      }, function () {
+        buildScriptProcessor();
         afterAudioReady();
       });
+      return;
     }
 
-    buildScriptProcessor(target, max);
+    buildScriptProcessor();
     afterAudioReady();
-    return Promise.resolve();
   }
 
-  function buildScriptProcessor(target, max) {
-    queue = new PcmQueue(target, max);
+  function buildScriptProcessor() {
+    queue = new PcmQueue();
     node = ctx.createScriptProcessor(SCRIPT_FRAMES, 1, 2);
     node.onaudioprocess = function (event) {
       var out = event.outputBuffer;
@@ -168,27 +185,39 @@
   }
 
   function afterAudioReady() {
+    applyBuffer();
     setupOutputPicker();
     resumeAudio();
   }
 
+  /*
+   * Os navegadores seguram o audio ate a pessoa interagir com a pagina.
+   * O botao resolve isso, e qualquer clique ou tecla tambem serve.
+   */
   function resumeAudio() {
     if (!ctx) return;
-    var done = function () {
-      var blocked = ctx.state !== 'running';
-      el.enable.hidden = !blocked;
-      if (blocked) {
-        setStatus('O navegador está segurando o áudio. Use o botão liberar o áudio.', false);
-      } else {
-        describeStream();
-      }
-    };
-    ctx.resume().then(done, done);
+    /* A promessa de resume fica pendente ate a pessoa interagir, entao o estado
+       da pagina vem do proprio contexto e do evento de mudanca de estado. */
+    try { ctx.resume(); } catch (e) {}
+    refreshAudioGate();
+  }
+
+  function refreshAudioGate() {
+    if (!ctx) return;
+    var blocked = ctx.state !== 'running';
+    el.enable.hidden = !blocked;
+    if (blocked) {
+      setStatus('O navegador está segurando o som. Clique no botão abaixo para começar a ouvir.', false);
+    } else {
+      describeStream();
+    }
   }
 
   el.enable.addEventListener('click', resumeAudio);
-  document.addEventListener('click', function () {
-    if (ctx && ctx.state !== 'running') resumeAudio();
+  ['click', 'keydown', 'touchstart'].forEach(function (name) {
+    document.addEventListener(name, function () {
+      if (ctx && ctx.state !== 'running') resumeAudio();
+    }, true);
   });
 
   function pushPcm(buffer) {
@@ -220,20 +249,15 @@
 
   /* ------------------------------------------------------------ placa de saida */
 
-  function outputPickerAvailable() {
-    return !!(window.isSecureContext &&
+  function setupOutputPicker() {
+    var available = !!(window.isSecureContext &&
       navigator.mediaDevices &&
       navigator.mediaDevices.enumerateDevices &&
       ctx && typeof ctx.setSinkId === 'function');
-  }
-
-  function setupOutputPicker() {
-    if (!outputPickerAvailable()) {
+    if (!available) {
       el.outputField.hidden = true;
-      el.outputHint.hidden = false;
       return;
     }
-    el.outputHint.hidden = true;
     populateOutputs();
     if (navigator.mediaDevices.addEventListener) {
       navigator.mediaDevices.addEventListener('devicechange', populateOutputs);
@@ -257,9 +281,8 @@
       });
       if (chosen) el.output.value = chosen;
       el.outputField.hidden = false;
-    }).catch(function () {
+    }, function () {
       el.outputField.hidden = true;
-      el.outputHint.hidden = false;
     });
   }
 
@@ -284,12 +307,6 @@
     setStatus('Ouvindo o microfone do celular em ' + kind + '.', false);
   }
 
-  function updateGainLabel() {
-    var value = Number(el.gain.value);
-    el.gainValue.textContent = value + ' dB';
-    el.gain.setAttribute('aria-valuetext', value + ' decibéis');
-  }
-
   function send(message) {
     if (ws && ws.readyState === 1) ws.send(JSON.stringify(message));
   }
@@ -299,9 +316,8 @@
   }
 
   el.gain.addEventListener('input', function () {
-    updateGainLabel();
     markLocalChange();
-    send({ type: 'setGain', gainDb: Number(el.gain.value) });
+    send({ type: 'setGain', gainPercent: Number(el.gain.value) });
   });
 
   el.mute.addEventListener('change', function () {
@@ -316,8 +332,14 @@
   el.stereo.addEventListener('change', function () {
     markLocalChange();
     el.mic.disabled = el.stereo.checked;
-    el.micHint.hidden = !el.stereo.checked;
     send({ type: 'setStereo', stereo: el.stereo.checked });
+  });
+
+  el.buffer.addEventListener('change', function () {
+    markLocalChange();
+    bufferMs = Number(el.buffer.value);
+    applyBuffer();
+    send({ type: 'setBuffer', bufferMs: bufferMs });
   });
 
   el.disconnect.addEventListener('click', function () {
@@ -326,6 +348,7 @@
     setTimeout(function () {
       if (ws) { try { ws.close(); } catch (e) {} }
       teardownAudio();
+      el.enable.hidden = true;
       setStatus('Transmissão encerrada.', false);
       window.alert('A transmissão foi encerrada. O aplicativo do celular voltou para o estado parado.');
     }, 200);
@@ -339,13 +362,16 @@
     config = cfg;
 
     if (Date.now() >= suppressUntil) {
-      el.gain.value = cfg.gainDb;
-      updateGainLabel();
+      el.gain.value = cfg.gainPercent;
       el.mic.value = cfg.source;
       el.stereo.checked = cfg.stereo;
+      el.buffer.value = String(cfg.bufferMs);
+      if (bufferMs !== cfg.bufferMs) {
+        bufferMs = cfg.bufferMs;
+        applyBuffer();
+      }
     }
     el.mic.disabled = el.stereo.checked;
-    el.micHint.hidden = !el.stereo.checked;
 
     if (cfg.stereo && cfg.stereoKnown && !cfg.stereoReal) {
       el.stereoHint.textContent =
@@ -358,7 +384,7 @@
     if (restart) {
       buildAudio(cfg);
     } else {
-      describeStream();
+      refreshAudioGate();
     }
   }
 
@@ -366,10 +392,6 @@
     var scheme = location.protocol === 'https:' ? 'wss://' : 'ws://';
     ws = new WebSocket(scheme + location.host + '/ws');
     ws.binaryType = 'arraybuffer';
-
-    ws.onopen = function () {
-      setStatus('Conectado. Aguardando o áudio.', false);
-    };
 
     ws.onmessage = function (event) {
       if (typeof event.data === 'string') {
@@ -387,6 +409,7 @@
 
     ws.onclose = function () {
       teardownAudio();
+      el.enable.hidden = true;
       if (!shuttingDown) {
         setStatus('Conexão perdida. Verifique se o aplicativo continua em execução e recarregue a página.', true);
       }
@@ -401,6 +424,5 @@
     if (ws) { try { ws.close(); } catch (e) {} }
   });
 
-  updateGainLabel();
   connect();
 })();
