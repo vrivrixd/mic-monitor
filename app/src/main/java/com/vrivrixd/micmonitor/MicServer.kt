@@ -58,7 +58,7 @@ class MicServer(
 
     fun stop() {
         closed = true
-        client.getAndSet(null)?.close(1001, "servidor encerrado")
+        client.getAndSet(null)?.close()
         try {
             serverSocket?.close()
         } catch (_: IOException) {
@@ -201,12 +201,7 @@ class MicServer(
         if (!client.compareAndSet(null, session)) {
             // Apenas um ouvinte por vez. O recem chegado e avisado e desligado.
             val busy = JSONObject().put("type", "busy").toString().toByteArray(Charsets.UTF_8)
-            try {
-                output.write(frame(OP_TEXT, busy, busy.size))
-                output.flush()
-            } catch (_: IOException) {
-            }
-            session.close(CLOSE_BUSY, "ocupado")
+            session.writeAndClose(frame(OP_TEXT, busy, busy.size))
             return
         }
 
@@ -220,7 +215,7 @@ class MicServer(
             Log.d(TAG, "Leitura do ouvinte encerrada", e)
         } finally {
             client.compareAndSet(session, null)
-            session.close(1000, "fim")
+            session.close()
             listener.onClientChanged(false)
         }
     }
@@ -363,22 +358,27 @@ class MicServer(
             }
         }
 
-        fun close(code: Int, reason: String) {
+        /**
+         * Encerra sem escrever nada, entao pode vir de qualquer thread, inclusive a
+         * principal. Escrever em socket fora de uma thread de rede derruba o aplicativo,
+         * e fechar a conexao ja avisa o navegador do outro lado.
+         */
+        fun close() {
             if (!closedFlag.compareAndSet(false, true)) return
-            try {
-                val reasonBytes = reason.toByteArray(Charsets.UTF_8)
-                val payload = ByteArray(2 + reasonBytes.size)
-                payload[0] = ((code shr 8) and 0xFF).toByte()
-                payload[1] = (code and 0xFF).toByte()
-                System.arraycopy(reasonBytes, 0, payload, 2, reasonBytes.size)
-                output.write(frame(OP_CLOSE, payload, payload.size))
-                output.flush()
-            } catch (_: IOException) {
-            }
             queue.clear()
             queue.offer(ByteArray(0))
             writer?.interrupt()
             closeSocket()
+        }
+
+        /** Manda um ultimo quadro e encerra. So pode ser chamado da thread da conexao. */
+        fun writeAndClose(data: ByteArray) {
+            try {
+                output.write(data)
+                output.flush()
+            } catch (_: IOException) {
+            }
+            close()
         }
 
         private fun closeSocket() {
@@ -395,7 +395,6 @@ class MicServer(
         private const val TEXT_MIME = "text/plain; charset=utf-8"
         private const val WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         private const val MAX_INCOMING = 64L * 1024L
-        private const val CLOSE_BUSY = 4001
 
         private const val OP_TEXT = 0x1
         private const val OP_BINARY = 0x2

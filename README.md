@@ -16,7 +16,7 @@ A página abre e o áudio começa a tocar. Ganho, microfone, estéreo, buffer e 
 na própria página, e as mudanças valem no mesmo instante nos dois lados.
 
 Na primeira vez o navegador costuma segurar o som até você clicar. A página mostra um botão
-para liberar.
+**Iniciar** para liberar.
 
 Apenas um computador ouve por vez. Quando você fecha a aba, a vaga fica livre.
 

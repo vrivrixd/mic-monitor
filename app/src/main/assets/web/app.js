@@ -10,6 +10,7 @@
     main: document.getElementById('main'),
     unsupported: document.getElementById('unsupported'),
     status: document.getElementById('status'),
+    enable: document.getElementById('enableAudio'),
     controls: document.getElementById('controls'),
     outputField: document.getElementById('outputField'),
     output: document.getElementById('output'),
@@ -193,8 +194,8 @@
   }
 
   /*
-   * Os navegadores seguram o audio no inicio. Eles liberam sozinhos depois de um
-   * tempo, e qualquer clique ou tecla na pagina tambem serve para destravar.
+   * Os navegadores seguram o audio ate a pessoa interagir com a pagina.
+   * O botao resolve isso, e qualquer clique ou tecla tambem serve.
    */
   function resumeAudio() {
     if (!ctx) return;
@@ -206,13 +207,16 @@
 
   function refreshAudioGate() {
     if (!ctx) return;
-    if (ctx.state !== 'running') {
-      setStatus('Carregando...', false);
+    var blocked = ctx.state !== 'running';
+    el.enable.hidden = !blocked;
+    if (blocked) {
+      setStatus('Clique para começar a ouvir.', false);
     } else {
       describeStream();
     }
   }
 
+  el.enable.addEventListener('click', resumeAudio);
   ['click', 'keydown', 'touchstart'].forEach(function (name) {
     document.addEventListener(name, function () {
       if (ctx && ctx.state !== 'running') resumeAudio();
@@ -298,6 +302,7 @@
   /* Sem conexao ativa os controles somem, para ninguem mexer no que nao esta ouvindo. */
   function hideControls() {
     el.controls.hidden = true;
+    el.enable.hidden = true;
   }
 
   function setStatus(text, isError) {
