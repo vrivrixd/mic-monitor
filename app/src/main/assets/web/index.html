@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mic Monitor</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div id="unsupported" class="notice" hidden>
+  <h1>Mic Monitor</h1>
+  <p>Esta página serve para ouvir o microfone do celular em um computador.</p>
+  <p>Abra este mesmo endereço no navegador de um computador com Windows, macOS ou Linux.</p>
+</div>
+
+<main id="main" hidden>
+  <h1>Mic Monitor</h1>
+  <p class="lead">Transmita o áudio do microfone do seu celular diretamente para sua placa de som</p>
+
+  <p id="status" class="status" role="status" aria-live="polite">Conectando ao celular.</p>
+
+  <button type="button" id="enableAudio" class="enable" hidden>Liberar o áudio</button>
+
+  <h2>Configurações</h2>
+
+  <form id="settings">
+
+    <div class="field" id="outputField" hidden>
+      <label for="output">Dispositivo de Saída</label>
+      <select id="output"></select>
+    </div>
+
+    <p class="hint" id="outputHint" hidden>
+      A troca de placa de som pelo navegador exige uma conexão segura, que esta página não usa.
+      Escolha a saída pelo misturador de volume do sistema.
+    </p>
+
+    <div class="field">
+      <label for="gain">Ganho do Microfone</label>
+      <input type="range" id="gain" min="-20" max="20" step="1" value="0"
+             aria-valuetext="0 decibéis">
+      <output id="gainValue" for="gain">0 dB</output>
+    </div>
+
+    <div class="field checkbox">
+      <input type="checkbox" id="mute">
+      <label for="mute">Silenciar Microfone</label>
+    </div>
+
+    <div class="field">
+      <label for="mic">Microfone</label>
+      <select id="mic">
+        <option value="default">Padrão do sistema</option>
+        <option value="front">Frontal, o mesmo das chamadas</option>
+        <option value="camera">Da câmera, geralmente o traseiro</option>
+      </select>
+    </div>
+
+    <p class="hint" id="micHint" hidden>
+      Em estéreo o celular combina os microfones disponíveis e esta escolha é ignorada.
+    </p>
+
+    <div class="field checkbox">
+      <input type="checkbox" id="stereo">
+      <label for="stereo">Estéreo</label>
+    </div>
+
+    <p class="hint" id="stereoHint" hidden></p>
+
+  </form>
+
+  <button type="button" id="disconnect" class="disconnect">Desconectar</button>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
