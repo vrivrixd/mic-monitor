@@ -10,7 +10,7 @@
     main: document.getElementById('main'),
     unsupported: document.getElementById('unsupported'),
     status: document.getElementById('status'),
-    enable: document.getElementById('enableAudio'),
+    controls: document.getElementById('controls'),
     outputField: document.getElementById('outputField'),
     output: document.getElementById('output'),
     gain: document.getElementById('gain'),
@@ -53,6 +53,8 @@
   PcmQueue.prototype.configure = function (target, max) {
     this.target = target;
     this.max = max;
+    /* Buffer maior so vale se a fila voltar a encher ate a nova marca. */
+    if (this.queued < target) this.priming = true;
   };
 
   PcmQueue.prototype.push = function (left, right) {
@@ -191,8 +193,8 @@
   }
 
   /*
-   * Os navegadores seguram o audio ate a pessoa interagir com a pagina.
-   * O botao resolve isso, e qualquer clique ou tecla tambem serve.
+   * Os navegadores seguram o audio no inicio. Eles liberam sozinhos depois de um
+   * tempo, e qualquer clique ou tecla na pagina tambem serve para destravar.
    */
   function resumeAudio() {
     if (!ctx) return;
@@ -204,16 +206,13 @@
 
   function refreshAudioGate() {
     if (!ctx) return;
-    var blocked = ctx.state !== 'running';
-    el.enable.hidden = !blocked;
-    if (blocked) {
-      setStatus('O navegador está segurando o som. Clique no botão abaixo para começar a ouvir.', false);
+    if (ctx.state !== 'running') {
+      setStatus('Carregando...', false);
     } else {
       describeStream();
     }
   }
 
-  el.enable.addEventListener('click', resumeAudio);
   ['click', 'keydown', 'touchstart'].forEach(function (name) {
     document.addEventListener(name, function () {
       if (ctx && ctx.state !== 'running') resumeAudio();
@@ -296,6 +295,11 @@
 
   /* ------------------------------------------------------------------ interface */
 
+  /* Sem conexao ativa os controles somem, para ninguem mexer no que nao esta ouvindo. */
+  function hideControls() {
+    el.controls.hidden = true;
+  }
+
   function setStatus(text, isError) {
     el.status.textContent = text;
     el.status.classList.toggle('error', !!isError);
@@ -303,8 +307,7 @@
 
   function describeStream() {
     if (!config) return;
-    var kind = config.channels === 2 ? 'estéreo' : 'mono';
-    setStatus('Ouvindo o microfone do celular em ' + kind + '.', false);
+    setStatus('Ouvindo...', false);
   }
 
   function send(message) {
@@ -348,7 +351,7 @@
     setTimeout(function () {
       if (ws) { try { ws.close(); } catch (e) {} }
       teardownAudio();
-      el.enable.hidden = true;
+      hideControls();
       setStatus('Transmissão encerrada.', false);
       window.alert('A transmissão foi encerrada. O aplicativo do celular voltou para o estado parado.');
     }, 200);
@@ -400,7 +403,8 @@
         if (message.type === 'config') applyConfig(message);
         else if (message.type === 'busy') {
           shuttingDown = true;
-          setStatus('Outro computador já está ouvindo. Feche a aba dele e recarregue esta página.', true);
+          hideControls();
+          setStatus('Outro computador já está ouvindo.', true);
         }
         return;
       }
@@ -409,7 +413,7 @@
 
     ws.onclose = function () {
       teardownAudio();
-      el.enable.hidden = true;
+      hideControls();
       if (!shuttingDown) {
         setStatus('Conexão perdida. Verifique se o aplicativo continua em execução e recarregue a página.', true);
       }

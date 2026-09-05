@@ -23,6 +23,8 @@ class MicMonitorPlayer extends AudioWorkletProcessor {
       } else if (data.type === 'configure') {
         this.target = data.target;
         this.max = data.max;
+        /* Buffer maior so vale se a fila voltar a encher ate a nova marca. */
+        if (this.queued < this.target) this.priming = true;
       } else if (data.type === 'reset') {
         this.chunks = [];
         this.queued = 0;

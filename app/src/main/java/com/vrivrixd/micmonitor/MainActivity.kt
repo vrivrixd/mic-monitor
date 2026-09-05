@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -23,6 +24,9 @@ class MainActivity : AppCompatActivity() {
 
     /** O botao iniciar e parar fica na barra, ao lado do menu de mais opcoes. */
     private var toggleItem: MenuItem? = null
+
+    /** Parar e iniciar esconde e mostra textos, o que faria o leitor de tela perder o lugar. */
+    private var restoreToggleFocus = false
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -73,6 +77,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onToggle() {
+        restoreToggleFocus = true
         if (StreamState.current.running) {
             StreamService.stop(this)
             return
@@ -139,6 +144,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             binding.warningText.visibility = View.GONE
         }
+
+        if (restoreToggleFocus) {
+            restoreToggleFocus = false
+            binding.toolbar.post { focusToggle() }
+        }
+    }
+
+    /** Devolve o foco do leitor de tela ao botao que a pessoa acabou de acionar. */
+    private fun focusToggle() {
+        val view = binding.toolbar.findViewById<View>(R.id.menu_toggle) ?: return
+        view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null)
     }
 
     private fun showDialog(titleRes: Int, message: String) {

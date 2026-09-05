@@ -18,59 +18,59 @@
   <h1>Mic Monitor</h1>
   <p class="lead">Transmita o áudio do microfone do seu celular diretamente para sua placa de som</p>
 
-  <p id="status" class="status" role="status" aria-live="polite">Conectando ao celular.</p>
+  <p id="status" class="status" role="status" aria-live="polite">Carregando...</p>
 
-  <button type="button" id="enableAudio" class="enable" hidden>Clique aqui para começar a ouvir</button>
+  <div id="controls">
+    <h2>Configurações</h2>
 
-  <h2>Configurações</h2>
+    <form id="settings">
 
-  <form id="settings">
+      <div class="field" id="outputField" hidden>
+        <label for="output">Dispositivo de Saída</label>
+        <select id="output"></select>
+      </div>
 
-    <div class="field" id="outputField" hidden>
-      <label for="output">Dispositivo de Saída</label>
-      <select id="output"></select>
-    </div>
+      <div class="field">
+        <label for="gain">Ganho do Microfone</label>
+        <input type="range" id="gain" min="0" max="100" step="1" value="50">
+      </div>
 
-    <div class="field">
-      <label for="gain">Ganho do Microfone</label>
-      <input type="range" id="gain" min="0" max="100" step="1" value="50">
-    </div>
+      <div class="field checkbox">
+        <input type="checkbox" id="mute">
+        <label for="mute">Silenciar Microfone</label>
+      </div>
 
-    <div class="field checkbox">
-      <input type="checkbox" id="mute">
-      <label for="mute">Silenciar Microfone</label>
-    </div>
+      <div class="field">
+        <label for="mic">Microfone</label>
+        <select id="mic">
+          <option value="default">Padrão do sistema</option>
+          <option value="front">Frontal, o mesmo das chamadas</option>
+          <option value="camera">Da câmera, geralmente o traseiro</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label for="mic">Microfone</label>
-      <select id="mic">
-        <option value="default">Padrão do sistema</option>
-        <option value="front">Frontal, o mesmo das chamadas</option>
-        <option value="camera">Da câmera, geralmente o traseiro</option>
-      </select>
-    </div>
+      <div class="field checkbox">
+        <input type="checkbox" id="stereo">
+        <label for="stereo">Estéreo</label>
+      </div>
 
-    <div class="field checkbox">
-      <input type="checkbox" id="stereo">
-      <label for="stereo">Estéreo</label>
-    </div>
+      <div class="field">
+        <label for="buffer">Buffer de Áudio</label>
+        <select id="buffer">
+          <option value="60">Muito curto, 60 milissegundos</option>
+          <option value="100">Curto, 100 milissegundos</option>
+          <option value="150">Médio, 150 milissegundos</option>
+          <option value="250">Longo, 250 milissegundos</option>
+          <option value="400">Muito longo, 400 milissegundos</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label for="buffer">Buffer de Áudio</label>
-      <select id="buffer">
-        <option value="60">Muito curto, 60 milissegundos</option>
-        <option value="100">Curto, 100 milissegundos</option>
-        <option value="150">Médio, 150 milissegundos</option>
-        <option value="250">Longo, 250 milissegundos</option>
-        <option value="400">Muito longo, 400 milissegundos</option>
-      </select>
-    </div>
+      <p class="hint" id="stereoHint" hidden></p>
 
-    <p class="hint" id="stereoHint" hidden></p>
+    </form>
 
-  </form>
-
-  <button type="button" id="disconnect" class="disconnect">Desconectar</button>
+    <button type="button" id="disconnect" class="disconnect">Desconectar</button>
+  </div>
 </main>
 
 <script src="/app.js"></script>

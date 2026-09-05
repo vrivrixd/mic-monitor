@@ -32,6 +32,12 @@ Apenas um computador ouve por vez. Quando você fecha a aba, a vaga fica livre.
 A troca de placa de som pela página depende de conexão segura, que esta versão não usa.
 Enquanto isso, a saída se escolhe pelo misturador de volume do sistema.
 
+## Assinatura
+
+O APK é assinado com a chave fixa guardada em `app/micmonitor.p12`. Ela existe para que
+uma versão nova instale por cima da anterior sem precisar desinstalar. Cada compilação
+na nuvem criaria uma chave diferente se essa não estivesse no projeto.
+
 ## Compilar
 
 O APK sai do GitHub Actions, sem precisar de Android Studio. A cada envio para a ramificação
@@ -40,7 +46,7 @@ principal o fluxo **Compilar APK** gera o arquivo e publica como artefato da exe
 Para compilar na própria máquina, com Java 17 e o SDK do Android instalados:
 
 ```
-gradle assembleDebug
+gradle assembleRelease
 ```
 
 ## Autor

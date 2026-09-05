@@ -11,13 +11,29 @@ android {
         applicationId = "com.vrivrixd.micmonitor"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
+    }
+
+    // Chave fixa guardada no projeto. Sem ela o servidor de compilacao criaria uma
+    // chave diferente a cada execucao e o aparelho recusaria a instalacao por cima.
+    signingConfigs {
+        create("stable") {
+            storeFile = file("micmonitor.p12")
+            storeType = "PKCS12"
+            storePassword = "micmonitor"
+            keyAlias = "micmonitor"
+            keyPassword = "micmonitor"
+        }
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("stable")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("stable")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

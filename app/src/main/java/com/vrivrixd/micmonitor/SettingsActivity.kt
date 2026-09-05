@@ -1,6 +1,12 @@
 package com.vrivrixd.micmonitor
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -9,6 +15,10 @@ import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import com.google.android.material.snackbar.Snackbar
 import com.vrivrixd.micmonitor.databinding.ActivitySettingsBinding
 
 /**
@@ -40,6 +50,7 @@ class SettingsActivity : AppCompatActivity() {
         setupMic()
         setupStereo()
         setupBuffer()
+        setupBattery()
 
         loadFromPrefs()
 
@@ -53,9 +64,27 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshBatteryButton()
+    }
+
     // -------------------------------------------------------------------- porta
 
     private fun setupPort() {
+        // O leitor de tela deixa de anunciar contentDescription assim que o campo
+        // tem texto. O rotulo entao vai como dica, que continua sendo anunciada.
+        ViewCompat.setAccessibilityDelegate(binding.portInput, object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(
+                host: View,
+                info: AccessibilityNodeInfoCompat
+            ) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.hintText = getString(R.string.label_port)
+                info.isShowingHintText = binding.portInput.text.isNullOrEmpty()
+            }
+        })
+
         binding.portInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -140,6 +169,40 @@ class SettingsActivity : AppCompatActivity() {
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+    }
+
+    // ------------------------------------------------------------------ bateria
+
+    private fun setupBattery() {
+        binding.batteryButton.setOnClickListener { requestIgnoreBattery() }
+    }
+
+    private fun isIgnoringBattery(): Boolean {
+        val power = getSystemService(Context.POWER_SERVICE) as PowerManager
+        return power.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    private fun refreshBatteryButton() {
+        binding.batteryButton.setText(
+            if (isIgnoringBattery()) R.string.battery_done else R.string.battery_action
+        )
+    }
+
+    /** Abre o pedido do sistema. Sem ele o Android pode encerrar a transmissao em segundo plano. */
+    private fun requestIgnoreBattery() {
+        val direct = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            .setData(Uri.parse("package:" + packageName))
+        try {
+            startActivity(direct)
+            return
+        } catch (_: ActivityNotFoundException) {
+        } catch (_: SecurityException) {
+        }
+        try {
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        } catch (_: ActivityNotFoundException) {
+            Snackbar.make(binding.root, R.string.battery_unavailable, Snackbar.LENGTH_LONG).show()
         }
     }
 
