@@ -12,11 +12,11 @@ aparelho tem suporte, e avisa na tela quando o estéreo não é real.
 2. Abra o aplicativo e toque em **Iniciar**.
 3. Digite no navegador do computador o endereço que aparece na tela.
 
-A página abre e o áudio começa a tocar. Ganho, microfone, estéreo, buffer e silenciar ficam
-na própria página, e as mudanças valem no mesmo instante nos dois lados.
+4. Na página que abrir, clique em **Iniciar**.
 
-Na primeira vez o navegador costuma segurar o som até você clicar. A página mostra um botão
-**Iniciar** para liberar.
+Antes desse clique a página não pede áudio nem ocupa a vaga de ouvinte. Depois dele o som
+começa e os ajustes aparecem. Ganho, microfone, estéreo, buffer e silenciar ficam na própria
+página, e as mudanças valem no mesmo instante nos dois lados.
 
 Apenas um computador ouve por vez. Quando você fecha a aba, a vaga fica livre.
 
@@ -27,6 +27,7 @@ Apenas um computador ouve por vez. Quando você fecha a aba, a vaga fica livre.
 | Android mínimo | 7.0 |
 | Formato na rede | PCM 16 bits, 48 kHz |
 | Buffer de áudio | 60 a 400 ms, ajustável |
+| Reprodução no navegador | trechos agendados na linha do tempo do áudio |
 | Escolha da placa de som pelo navegador | indisponível em conexão simples |
 
 A troca de placa de som pela página depende de conexão segura, que esta versão não usa.
