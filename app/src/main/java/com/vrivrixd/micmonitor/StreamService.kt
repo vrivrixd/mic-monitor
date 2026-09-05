@@ -9,7 +9,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -31,6 +33,9 @@ class StreamService : Service(), MicServer.Listener {
     private var address: String? = null
     private var streamId = 0
     private var stereoKnown = false
+
+    /** Tudo que mexe no servico passa por aqui, para nao concorrer entre threads. */
+    private val main = Handler(Looper.getMainLooper())
 
     override fun onCreate() {
         super.onCreate()
@@ -142,17 +147,27 @@ class StreamService : Service(), MicServer.Listener {
     }
 
     private fun releaseEverything() {
-        engine?.stop()
+        try {
+            engine?.stop()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Falha ao encerrar a captura", e)
+        }
         engine = null
-        server?.stop()
+        try {
+            server?.stop()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Falha ao encerrar o servidor", e)
+        }
         server = null
         try {
             wakeLock?.takeIf { it.isHeld }?.release()
-        } catch (_: RuntimeException) {
+        } catch (e: Throwable) {
+            Log.w(TAG, "Falha ao soltar o bloqueio de energia", e)
         }
         try {
             wifiLock?.takeIf { it.isHeld }?.release()
-        } catch (_: RuntimeException) {
+        } catch (e: Throwable) {
+            Log.w(TAG, "Falha ao soltar o bloqueio de Wi-Fi", e)
         }
         wakeLock = null
         wifiLock = null
@@ -217,6 +232,10 @@ class StreamService : Service(), MicServer.Listener {
     // ----------------------------------------------------- comandos da pagina
 
     override fun onCommand(command: JSONObject) {
+        main.post { handleCommand(command) }
+    }
+
+    private fun handleCommand(command: JSONObject) {
         when (command.optString("type")) {
             "setGain" -> {
                 prefs.gainPercent = command.optInt("gainPercent", Prefs.DEFAULT_GAIN_PERCENT)

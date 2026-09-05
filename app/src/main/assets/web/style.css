@@ -132,6 +132,13 @@ button {
   cursor: pointer;
 }
 
+.enable {
+  margin-top: 16px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
 .disconnect {
   margin-top: 32px;
   background: var(--accent);

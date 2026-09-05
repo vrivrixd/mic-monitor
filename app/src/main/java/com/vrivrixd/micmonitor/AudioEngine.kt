@@ -116,9 +116,14 @@ class AudioEngine(
         record?.let {
             try {
                 if (it.recordingState == AudioRecord.RECORDSTATE_RECORDING) it.stop()
-            } catch (_: IllegalStateException) {
+            } catch (e: Throwable) {
+                Log.w(TAG, "Falha ao parar a captura", e)
             }
-            it.release()
+            try {
+                it.release()
+            } catch (e: Throwable) {
+                Log.w(TAG, "Falha ao liberar a captura", e)
+            }
         }
         record = null
     }

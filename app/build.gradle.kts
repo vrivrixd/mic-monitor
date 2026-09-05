@@ -11,8 +11,10 @@ android {
         applicationId = "com.vrivrixd.micmonitor"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        // O numero interno precisa subir a cada envio, senao o Android recusa a
+        // atualizacao. O nome visivel continua em 1.0 ate o projeto ficar pronto.
+        versionCode = 3
+        versionName = "1.0"
     }
 
     // Chave fixa guardada no projeto. Sem ela o servidor de compilacao criaria uma
