@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mic Monitor</string>
+
+    <string name="action_start">Iniciar</string>
+    <string name="action_stop">Parar</string>
+    <string name="more_options">Mais opções</string>
+
+    <string name="menu_settings">Configurações</string>
+    <string name="menu_help">Ajuda</string>
+    <string name="menu_about">Sobre</string>
+
+    <string name="status_running">Status: Em execução</string>
+    <string name="status_stopped">Status: Parado</string>
+    <string name="status_starting">Status: Iniciando</string>
+    <string name="address_intro">Conecte-se para ouvir o microfone pelo seguinte endereço:</string>
+    <string name="address_unavailable">Endereço indisponível. Verifique se o celular está conectado a uma rede Wi-Fi.</string>
+
+    <string name="client_none">Nenhum computador conectado.</string>
+    <string name="client_connected">Um computador está conectado e ouvindo.</string>
+
+    <string name="settings_title">Configurações</string>
+    <string name="navigate_up">Navegar para cima</string>
+
+    <string name="label_port">Porta de conexão</string>
+    <string name="hint_port">Vazio usa a porta 8080</string>
+    <string name="label_gain">Ganho do microfone</string>
+    <string name="label_mic">Microfone</string>
+    <string name="label_stereo">Áudio estéreo, se disponível</string>
+    <string name="stereo_help">Quando o estéreo está ativo, o aparelho combina os microfones disponíveis e a escolha de microfone acima é ignorada.</string>
+
+    <string name="mic_default">Padrão do sistema</string>
+    <string name="mic_front">Frontal, o mesmo das chamadas</string>
+    <string name="mic_camera">Da câmera, geralmente o traseiro</string>
+
+    <string name="gain_value">%1$s dB</string>
+    <string name="gain_desc">Ganho do microfone, %1$s decibéis</string>
+
+    <string name="error_port_range">Use uma porta entre 1024 e 65535.</string>
+    <string name="settings_saved">Configurações salvas.</string>
+
+    <string name="dialog_ok">OK</string>
+    <string name="about_title">Sobre</string>
+    <string name="about_body">Mic Monitor, versão %1$s.\n\nAutor: Vitor Bruski.</string>
+
+    <string name="help_title">Ajuda</string>
+    <string name="help_body">O Mic Monitor transmite o som do microfone do celular para outro aparelho pela rede Wi-Fi, sem instalar programas ou drivers no computador.\n\nComo usar:\n\n1. Ligue o celular e o computador na mesma rede Wi-Fi.\n\n2. Toque em Iniciar. O aplicativo mostra um endereço na tela.\n\n3. Digite esse endereço no navegador do computador. A página abre e o som começa a tocar.\n\nNa página do navegador você ajusta o ganho, silencia a escuta sem mexer no celular, troca o microfone e liga ou desliga o estéreo. As mudanças valem no mesmo instante nos dois lados.\n\nApenas um computador pode ouvir por vez. Se outro tentar entrar enquanto você escuta, ele recebe um aviso de ocupado. Assim que você fechar a aba, a vaga fica livre.\n\nSobre o estéreo: nem todo celular grava em estéreo de verdade. Quando o aparelho não tem suporte, o aplicativo avisa na tela e continua transmitindo em mono.\n\nO botão Desconectar da página encerra a transmissão e o aplicativo volta para o estado parado.\n\nA porta de conexão pode ficar vazia. Nesse caso o aplicativo usa a porta 8080.</string>
+
+    <string name="notif_channel_name">Transmissão em andamento</string>
+    <string name="notif_title">Mic Monitor em execução</string>
+    <string name="notif_text">Transmitindo o microfone em %1$s</string>
+
+    <string name="perm_mic_needed">O aplicativo precisa da permissão de microfone para funcionar.</string>
+    <string name="error_port_busy">Não foi possível abrir a porta %1$d. Ela pode estar em uso. Escolha outra nas configurações.</string>
+    <string name="error_mic_busy">Não foi possível acessar o microfone. Outro aplicativo pode estar usando.</string>
+    <string name="warn_stereo_fake">Este aparelho não entrega estéreo real. A transmissão continua em mono.</string>
+</resources>
