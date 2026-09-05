@@ -20,7 +20,7 @@
 
   <p id="status" class="status" role="status" aria-live="polite">Conectando ao celular.</p>
 
-  <button type="button" id="enableAudio" class="enable" hidden>Liberar o áudio</button>
+  <button type="button" id="enableAudio" class="enable" hidden>Clique aqui para começar a ouvir</button>
 
   <h2>Configurações</h2>
 
@@ -31,16 +31,9 @@
       <select id="output"></select>
     </div>
 
-    <p class="hint" id="outputHint" hidden>
-      A troca de placa de som pelo navegador exige uma conexão segura, que esta página não usa.
-      Escolha a saída pelo misturador de volume do sistema.
-    </p>
-
     <div class="field">
       <label for="gain">Ganho do Microfone</label>
-      <input type="range" id="gain" min="-20" max="20" step="1" value="0"
-             aria-valuetext="0 decibéis">
-      <output id="gainValue" for="gain">0 dB</output>
+      <input type="range" id="gain" min="0" max="100" step="1" value="50">
     </div>
 
     <div class="field checkbox">
@@ -57,13 +50,20 @@
       </select>
     </div>
 
-    <p class="hint" id="micHint" hidden>
-      Em estéreo o celular combina os microfones disponíveis e esta escolha é ignorada.
-    </p>
-
     <div class="field checkbox">
       <input type="checkbox" id="stereo">
       <label for="stereo">Estéreo</label>
+    </div>
+
+    <div class="field">
+      <label for="buffer">Buffer de Áudio</label>
+      <select id="buffer">
+        <option value="60">Muito curto, 60 milissegundos</option>
+        <option value="100">Curto, 100 milissegundos</option>
+        <option value="150">Médio, 150 milissegundos</option>
+        <option value="250">Longo, 250 milissegundos</option>
+        <option value="400">Muito longo, 400 milissegundos</option>
+      </select>
     </div>
 
     <p class="hint" id="stereoHint" hidden></p>

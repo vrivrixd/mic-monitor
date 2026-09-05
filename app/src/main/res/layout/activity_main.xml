@@ -28,19 +28,10 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/toggleButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="56dp"
-                android:text="@string/action_start"
-                android:textSize="18sp" />
-
             <TextView
                 android:id="@+id/statusText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
                 android:accessibilityLiveRegion="polite"
                 android:focusable="true"
                 android:text="@string/status_stopped"
@@ -62,8 +53,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:focusable="true"
-                android:textIsSelectable="true"
                 android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textIsSelectable="true"
                 android:textStyle="bold"
                 android:visibility="gone" />
 
