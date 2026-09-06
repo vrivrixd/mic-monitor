@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
         R.id.menu_help -> {
-            showDialog(R.string.help_title, getString(R.string.help_body))
+            showHelp()
             true
         }
         R.id.menu_about -> {
@@ -162,6 +162,27 @@ class MainActivity : AppCompatActivity() {
         view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null)
     }
 
+    /** A ajuda abre como lista de assuntos. Cada assunto abre em cima dela. */
+    private fun showHelp() {
+        val titles = HELP_TOPICS.map { getString(it.first) }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.help_title)
+            .setItems(titles) { _, which -> showHelpTopic(which) }
+            .setNegativeButton(R.string.help_close, null)
+            .show()
+    }
+
+    private fun showHelpTopic(index: Int) {
+        val topic = HELP_TOPICS.getOrNull(index) ?: return
+        MaterialAlertDialogBuilder(this)
+            .setTitle(topic.first)
+            .setMessage(topic.second)
+            // Fechar o assunto, pelo botao ou pelo voltar, devolve a lista.
+            .setPositiveButton(R.string.dialog_ok) { _, _ -> showHelp() }
+            .setOnCancelListener { showHelp() }
+            .show()
+    }
+
     private fun showDialog(titleRes: Int, message: String) {
         MaterialAlertDialogBuilder(this)
             .setTitle(titleRes)
@@ -174,5 +195,18 @@ class MainActivity : AppCompatActivity() {
         packageManager.getPackageInfo(packageName, 0).versionName ?: "1.0"
     } catch (e: PackageManager.NameNotFoundException) {
         "1.0"
+    }
+
+    companion object {
+        /** Titulo e texto de cada assunto da ajuda, na ordem em que aparecem. */
+        private val HELP_TOPICS = listOf(
+            R.string.help_topic_about to R.string.help_body_about,
+            R.string.help_topic_start to R.string.help_body_start,
+            R.string.help_topic_port to R.string.help_body_port,
+            R.string.help_topic_controls to R.string.help_body_controls,
+            R.string.help_topic_buffer to R.string.help_body_buffer,
+            R.string.help_topic_output to R.string.help_body_output,
+            R.string.help_topic_battery to R.string.help_body_battery
+        )
     }
 }

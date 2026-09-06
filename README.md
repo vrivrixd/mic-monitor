@@ -11,7 +11,6 @@ aparelho tem suporte, e avisa na tela quando o estéreo não é real.
 1. Ligue o celular e o computador na mesma rede Wi-Fi.
 2. Abra o aplicativo e toque em **Iniciar**.
 3. Digite no navegador do computador o endereço que aparece na tela.
-
 4. Na página que abrir, clique em **Iniciar**.
 
 Antes desse clique a página não pede áudio nem ocupa a vaga de ouvinte. Depois dele o som
@@ -28,28 +27,94 @@ Apenas um computador ouve por vez. Quando você fecha a aba, a vaga fica livre.
 | Formato na rede | PCM 16 bits, 48 kHz |
 | Buffer de áudio | 60 a 400 ms, ajustável |
 | Reprodução no navegador | trechos agendados na linha do tempo do áudio |
+| Idiomas | português do Brasil e de Portugal, inglês, espanhol, francês, italiano, alemão, árabe, híndi, russo, vietnamita |
 | Escolha da placa de som pelo navegador | indisponível em conexão simples |
 
 A troca de placa de som pela página depende de conexão segura, que esta versão não usa.
 Enquanto isso, a saída se escolhe pelo misturador de volume do sistema.
 
-## Assinatura
-
-O APK é assinado com a chave fixa guardada em `app/micmonitor.p12`. Ela existe para que
-uma versão nova instale por cima da anterior sem precisar desinstalar. Cada compilação
-na nuvem criaria uma chave diferente se essa não estivesse no projeto.
-
 ## Compilar
 
-O APK sai do GitHub Actions, sem precisar de Android Studio. A cada envio para a ramificação
-principal o fluxo **Compilar APK** gera o arquivo e publica como artefato da execução.
+### O que precisa estar instalado
 
-Para compilar na própria máquina, com Java 17 e o SDK do Android instalados:
+| Ferramenta | Versão |
+| --- | --- |
+| JDK | 17 |
+| Gradle | 8.9 ou mais recente |
+| Android SDK, plataforma | android-35 |
+| Android SDK, ferramentas de compilação | 35.0.0 |
+
+O Android Studio já traz o SDK e o JDK, mas não é obrigatório. Serve também instalar apenas
+as ferramentas de linha de comando do Android e um JDK 17 avulso.
+
+### Apontar o SDK
+
+O projeto precisa saber onde o SDK do Android está. Escolha um dos dois caminhos.
+
+Criar um arquivo `local.properties` na raiz do projeto, com o caminho do SDK:
+
+```
+sdk.dir=/caminho/para/o/android/sdk
+```
+
+Ou definir a variável de ambiente `ANDROID_HOME` apontando para a mesma pasta.
+
+Se a plataforma e as ferramentas de compilação ainda não estiverem instaladas, use o
+gerenciador do SDK:
+
+```
+sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+```
+
+### Gerar o APK
+
+Na raiz do projeto:
 
 ```
 gradle assembleRelease
 ```
 
-## Autor
+O arquivo sai em:
 
-Vitor Bruski.
+```
+app/build/outputs/apk/release/app-release.apk
+```
+
+Para uma compilação de depuração, com registro de erros mais falante:
+
+```
+gradle assembleDebug
+```
+
+### Instalar no celular
+
+Com o aparelho ligado por cabo e a depuração por USB ativada:
+
+```
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+
+Sem cabo, copie o APK para o celular e abra o arquivo por lá. O Android vai pedir permissão
+para instalar de fonte desconhecida.
+
+## Assinatura
+
+O APK é assinado com a chave guardada em `app/micmonitor.p12`, com senha e apelido
+`micmonitor`. Ela é fixa de propósito: uma versão nova instala por cima da anterior sem
+precisar desinstalar, o que só funciona quando todas as compilações usam a mesma chave.
+
+Para usar uma chave própria, gere a sua e troque o bloco `signingConfigs` em
+`app/build.gradle.kts`. Quem trocar a chave precisa desinstalar a versão antiga antes de
+instalar a nova.
+
+## Estrutura
+
+| Caminho | Conteúdo |
+| --- | --- |
+| `app/src/main/java/.../MainActivity.kt` | tela principal, menu e diálogos |
+| `app/src/main/java/.../SettingsActivity.kt` | tela de configurações |
+| `app/src/main/java/.../StreamService.kt` | serviço em primeiro plano que sustenta a transmissão |
+| `app/src/main/java/.../AudioEngine.kt` | captura do microfone e ganho |
+| `app/src/main/java/.../MicServer.kt` | servidor HTTP e WebSocket embarcado |
+| `app/src/main/assets/web/` | página servida ao navegador do computador |
+| `app/src/main/res/values*/strings.xml` | textos, um arquivo por idioma |
