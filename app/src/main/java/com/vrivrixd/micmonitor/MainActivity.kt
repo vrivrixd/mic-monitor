@@ -49,13 +49,6 @@ class MainActivity : AppCompatActivity() {
         StreamState.state.observe(this) { render(it) }
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Se o microfone ficou com outro aplicativo, a volta para esta tela e uma
-        // boa hora para tentar de novo, porque a pessoa esta olhando.
-        if (StreamState.current.paused) StreamService.retryMicrophone()
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         toggleItem = menu.findItem(R.id.menu_toggle)

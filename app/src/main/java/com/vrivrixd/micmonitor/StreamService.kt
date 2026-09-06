@@ -7,9 +7,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.media.AudioRecordingConfiguration
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
@@ -17,6 +16,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import org.json.JSONObject
 import java.io.IOException
@@ -37,10 +37,8 @@ class StreamService : Service(), MicServer.Listener {
     private var streamId = 0
     private var stereoKnown = false
 
-    /** Verdadeiro quando outro aplicativo pediu o microfone e nos soltamos ele. */
-    private var pausedByFocus = false
-    private var focusRequest: AudioFocusRequest? = null
-    private var holdsFocus = false
+    /** Verdadeiro quando outro aplicativo esta gravando e o sistema nos deu silencio. */
+    private var micSilenced = false
 
     /** Tudo que mexe no servico passa por aqui, para nao concorrer entre threads. */
     private val main = Handler(Looper.getMainLooper())
@@ -92,23 +90,22 @@ class StreamService : Service(), MicServer.Listener {
 
         acquireLocks()
 
-        // O foco vem antes da captura. Se outro aplicativo ja estiver com o
-        // microfone, comecamos pausados em vez de tomar o lugar dele.
-        pausedByFocus = !requestFocus()
-
-        if (!pausedByFocus && !startEngine()) {
+        if (!startEngine()) {
             releaseEverything()
             StreamState.reset(getString(R.string.error_mic_busy))
             stopSelf()
             return
         }
 
+        micSilenced = false
+        watchRecording()
+
         StreamState.update {
             it.copy(
                 running = true,
                 address = address,
                 clientConnected = false,
-                paused = pausedByFocus,
+                paused = false,
                 stereoRequested = prefs.stereo,
                 stereoReal = false,
                 stereoVerified = false,
@@ -140,101 +137,53 @@ class StreamService : Service(), MicServer.Listener {
         return true
     }
 
-    // -------------------------------------------------------------- foco de audio
+    // ------------------------------------------------- disputa pelo microfone
 
     /*
-     * Quando outro aplicativo do celular vai gravar, uma chamada ou um audio de
-     * mensageiro, ele pede o foco de audio ao sistema. Nos soltamos o microfone de
-     * verdade nesse momento, e voltamos assim que o foco retorna. Sem isso o outro
-     * aplicativo grava mudo, porque o microfone continua preso aqui.
+     * O Android decide sozinho quem fica com o microfone quando dois aplicativos
+     * gravam ao mesmo tempo, e quem perde recebe silencio. A captura de camera e
+     * marcada como reservada por padrao, o que impedia o outro aplicativo de gravar.
+     * A marca e desligada em AudioEngine, entao agora o recem chegado ganha.
+     *
+     * Aqui so acompanhamos o resultado, para dizer na tela e na pagina que a
+     * transmissao esta muda porque outro aplicativo esta gravando. Nada disso
+     * envolve reproducao de midia.
      */
-    private val focusListener = AudioManager.OnAudioFocusChangeListener { change ->
-        when (change) {
-            AudioManager.AUDIOFOCUS_GAIN -> main.post { resumeAfterFocus() }
-            AudioManager.AUDIOFOCUS_LOSS,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> main.post { pauseForFocus() }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private inner class SilenceWatcher : AudioManager.AudioRecordingCallback() {
+        override fun onRecordingConfigChanged(configs: List<AudioRecordingConfiguration>) {
+            val session = engine?.sessionId ?: return
+            val silenced = configs.any {
+                it.clientAudioSessionId == session && it.isClientSilenced
+            }
+            main.post { setSilenced(silenced) }
         }
     }
 
-    private fun requestFocus(): Boolean {
+    private val recordingCallback: AudioManager.AudioRecordingCallback? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) SilenceWatcher() else null
+
+    private fun watchRecording() {
+        val callback = recordingCallback ?: return
         val manager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val attributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                .build()
-            val request = AudioFocusRequest
-                .Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
-                .setAudioAttributes(attributes)
-                .setOnAudioFocusChangeListener(focusListener, main)
-                // Abaixar o volume nao adianta para quem grava, entao queremos o aviso.
-                .setWillPauseWhenDucked(true)
-                .build()
-            focusRequest = request
-            manager.requestAudioFocus(request)
-        } else {
-            @Suppress("DEPRECATION")
-            manager.requestAudioFocus(
-                focusListener,
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
-            )
-        }
-        holdsFocus = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        return holdsFocus
+        manager.registerAudioRecordingCallback(callback, main)
     }
 
-    private fun abandonFocus() {
-        if (!holdsFocus) return
-        holdsFocus = false
+    private fun unwatchRecording() {
+        val callback = recordingCallback ?: return
         val manager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            focusRequest?.let { manager.abandonAudioFocusRequest(it) }
-        } else {
-            @Suppress("DEPRECATION")
-            manager.abandonAudioFocus(focusListener)
-        }
-        focusRequest = null
+        manager.unregisterAudioRecordingCallback(callback)
     }
 
-    /** Solta o microfone sem derrubar o servidor nem a pagina do computador. */
-    private fun pauseForFocus() {
-        if (server == null || pausedByFocus) return
-        pausedByFocus = true
-        engine?.stop()
-        engine = null
-        StreamState.update { it.copy(paused = true) }
+    private fun setSilenced(silenced: Boolean) {
+        if (silenced == micSilenced || server == null) return
+        micSilenced = silenced
+        StreamState.update { it.copy(paused = silenced) }
         server?.sendConfig()
         updateNotification()
-        Log.i(TAG, "Microfone solto para outro aplicativo")
+        Log.i(TAG, if (silenced) "Microfone cedido a outro aplicativo" else "Microfone de volta")
     }
 
-    private fun resumeAfterFocus() {
-        if (server == null || !pausedByFocus) return
-        pausedByFocus = false
-        if (!startEngine()) {
-            pausedByFocus = true
-            StreamState.update { it.copy(paused = true) }
-            return
-        }
-        StreamState.update {
-            it.copy(paused = false, stereoReal = false, stereoVerified = false)
-        }
-        server?.sendConfig()
-        updateNotification()
-        Log.i(TAG, "Microfone retomado")
-    }
-
-    /**
-     * Tentativa a pedido da pessoa, quando ela volta para a tela do aplicativo.
-     * Nao ha nova tentativa automatica, senao roubariamos o microfone de volta de
-     * quem ainda estivesse gravando.
-     */
-    fun retryAfterFocusLoss() {
-        if (server == null || !pausedByFocus) return
-        if (requestFocus()) resumeAfterFocus()
-    }
 
     private fun acquireLocks() {
         val power = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -256,11 +205,11 @@ class StreamService : Service(), MicServer.Listener {
     }
 
     private fun releaseEverything() {
-        pausedByFocus = false
+        micSilenced = false
         try {
-            abandonFocus()
+            unwatchRecording()
         } catch (e: Throwable) {
-            Log.w(TAG, "Falha ao soltar o foco de audio", e)
+            Log.w(TAG, "Falha ao parar o acompanhamento de gravacao", e)
         }
         try {
             engine?.stop()
@@ -310,13 +259,6 @@ class StreamService : Service(), MicServer.Listener {
     fun reconfigure() {
         val current = server ?: return
         engine?.gainDb = prefs.gainDb
-
-        if (pausedByFocus) {
-            // O microfone esta com outro aplicativo. Guardamos a escolha para depois.
-            sourceChanged = false
-            current.sendConfig()
-            return
-        }
 
         if (current.port != prefs.port) {
             // A porta mudou, entao o endereco muda e o ouvinte precisa reconectar.
@@ -411,7 +353,7 @@ class StreamService : Service(), MicServer.Listener {
             .put("stereo", prefs.stereo)
             .put("stereoKnown", stereoKnown)
             .put("stereoReal", running?.stereoReal ?: false)
-            .put("paused", pausedByFocus)
+            .put("paused", micSilenced)
     }
 
     // ------------------------------------------------------------- notificacao
@@ -442,7 +384,7 @@ class StreamService : Service(), MicServer.Listener {
             .setContentTitle(getString(R.string.notif_title))
             .setContentText(
                 when {
-                    pausedByFocus -> getString(R.string.notif_paused)
+                    micSilenced -> getString(R.string.notif_paused)
                     address != null -> getString(R.string.notif_text, address)
                     else -> getString(R.string.address_unavailable)
                 }
@@ -485,11 +427,6 @@ class StreamService : Service(), MicServer.Listener {
             context.startService(
                 Intent(context, StreamService::class.java).setAction(ACTION_STOP)
             )
-        }
-
-        /** Nova tentativa de pegar o microfone, a pedido da pessoa. */
-        fun retryMicrophone() {
-            instance?.retryAfterFocusLoss()
         }
 
         /** Reaplica as preferencias se o servico estiver ativo. */

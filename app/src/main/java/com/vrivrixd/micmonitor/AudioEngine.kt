@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import android.util.Log
 import kotlin.math.abs
 import kotlin.math.pow
@@ -34,6 +35,10 @@ class AudioEngine(
         private set
 
     var channels = 1
+        private set
+
+    /** Identificador da sessao, usado para saber se o sistema nos deu silencio. */
+    var sessionId = 0
         private set
 
     /** Falso quando o aparelho abriu em estereo mas duplicou o mesmo sinal nos dois canais. */
@@ -146,7 +151,7 @@ class AudioEngine(
                 if (min <= 0) continue
                 val bufferSize = maxOf(min, rate / 50 * ch * 2 * 4)
                 val candidate = try {
-                    AudioRecord(source, rate, mask, AudioFormat.ENCODING_PCM_16BIT, bufferSize)
+                    build(source, rate, mask, bufferSize)
                 } catch (e: Exception) {
                     Log.w(TAG, "Falha ao abrir fonte $source em $rate Hz", e)
                     null
@@ -154,12 +159,39 @@ class AudioEngine(
                 if (candidate != null && candidate.state == AudioRecord.STATE_INITIALIZED) {
                     sampleRate = rate
                     channels = ch
+                    sessionId = candidate.audioSessionId
                     return candidate
                 }
                 candidate?.release()
             }
         }
         return null
+    }
+
+    /**
+     * Abre a captura sem reservar o microfone para nos.
+     *
+     * A fonte de camera, que e a que mais entrega estereo de verdade, vem marcada
+     * como reservada por padrao. Essa marca impede que qualquer outro aplicativo
+     * grave ao mesmo tempo, e era por isso que um audio gravado no mensageiro saia
+     * mudo enquanto a transmissao estava ligada. Sem ela o Android volta a decidir
+     * sozinho, e quem comeca a gravar depois recebe o som.
+     */
+    @SuppressLint("MissingPermission")
+    private fun build(source: Int, rate: Int, mask: Int, bufferSize: Int): AudioRecord {
+        val format = AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+            .setSampleRate(rate)
+            .setChannelMask(mask)
+            .build()
+        val builder = AudioRecord.Builder()
+            .setAudioSource(source)
+            .setAudioFormat(format)
+            .setBufferSizeInBytes(bufferSize)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            builder.setPrivacySensitive(false)
+        }
+        return builder.build()
     }
 
     private fun androidSource(key: String): Int = when (key) {
