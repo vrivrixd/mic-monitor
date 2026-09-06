@@ -219,7 +219,7 @@
   function describeStream() {
     if (!config) return;
     if (config.paused) {
-      setStatus('Pausado. Outro aplicativo do celular está usando o microfone.', false);
+      setStatus('Pausado. Outro aplicativo do celular está gravando.', false);
     } else {
       setStatus('Ouvindo...', false);
     }
