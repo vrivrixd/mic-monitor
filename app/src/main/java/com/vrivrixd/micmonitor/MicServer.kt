@@ -139,6 +139,7 @@ class MicServer(
             "/", "/index.html" -> "web/index.html"
             "/style.css" -> "web/style.css"
             "/app.js" -> "web/app.js"
+            "/i18n.js" -> "web/i18n.js"
             else -> null
         }
         if (asset == null) {
