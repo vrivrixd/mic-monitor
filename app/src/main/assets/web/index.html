@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,60 +10,60 @@
 
 <div id="unsupported" class="notice" hidden>
   <h1>Mic Monitor</h1>
-  <p>Esta página serve para ouvir o microfone do celular em um computador.</p>
-  <p>Abra este mesmo endereço no navegador de um computador com Windows, macOS ou Linux.</p>
+  <p data-i18n="mobile1"></p>
+  <p data-i18n="mobile2"></p>
 </div>
 
 <main id="main" hidden>
   <h1>Mic Monitor</h1>
-  <p class="lead">Transmita o áudio do microfone do seu celular diretamente para sua placa de som</p>
+  <p class="lead" data-i18n="lead"></p>
 
-  <p id="status" class="status" role="status" aria-live="polite">Carregando...</p>
+  <p id="status" class="status" role="status" aria-live="polite"></p>
 
-  <button type="button" id="enableAudio" class="enable" hidden>Iniciar</button>
+  <button type="button" id="enableAudio" class="enable" data-i18n="start" hidden></button>
 
   <div id="controls" hidden>
-    <h2>Configurações</h2>
+    <h2 data-i18n="settings"></h2>
 
     <form id="settings">
 
       <div class="field" id="outputField" hidden>
-        <label for="output">Dispositivo de Saída</label>
+        <label for="output" data-i18n="output"></label>
         <select id="output"></select>
       </div>
 
       <div class="field">
-        <label for="gain">Ganho do Microfone</label>
+        <label for="gain" data-i18n="gain"></label>
         <input type="range" id="gain" min="0" max="100" step="1" value="50">
       </div>
 
       <div class="field checkbox">
         <input type="checkbox" id="mute">
-        <label for="mute">Silenciar Microfone</label>
+        <label for="mute" data-i18n="mute"></label>
       </div>
 
       <div class="field">
-        <label for="mic">Microfone</label>
+        <label for="mic" data-i18n="mic"></label>
         <select id="mic">
-          <option value="default">Padrão do sistema</option>
-          <option value="front">Frontal, o mesmo das chamadas</option>
-          <option value="camera">Da câmera, geralmente o traseiro</option>
+          <option value="default" data-i18n="micDefault"></option>
+          <option value="front" data-i18n="micFront"></option>
+          <option value="camera" data-i18n="micRear"></option>
         </select>
       </div>
 
       <div class="field checkbox">
         <input type="checkbox" id="stereo">
-        <label for="stereo">Estéreo</label>
+        <label for="stereo" data-i18n="stereo"></label>
       </div>
 
       <div class="field">
-        <label for="buffer">Buffer de Áudio</label>
+        <label for="buffer" data-i18n="buffer"></label>
         <select id="buffer">
-          <option value="60">Muito curto, 60 milissegundos</option>
-          <option value="100">Curto, 100 milissegundos</option>
-          <option value="150">Médio, 150 milissegundos</option>
-          <option value="250">Longo, 250 milissegundos</option>
-          <option value="400">Muito longo, 400 milissegundos</option>
+          <option value="60" data-i18n="buffer60"></option>
+          <option value="100" data-i18n="buffer100"></option>
+          <option value="150" data-i18n="buffer150"></option>
+          <option value="250" data-i18n="buffer250"></option>
+          <option value="400" data-i18n="buffer400"></option>
         </select>
       </div>
 
@@ -71,10 +71,11 @@
 
     </form>
 
-    <button type="button" id="disconnect" class="disconnect">Desconectar</button>
+    <button type="button" id="disconnect" class="disconnect" data-i18n="disconnect"></button>
   </div>
 </main>
 
+<script src="/i18n.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>

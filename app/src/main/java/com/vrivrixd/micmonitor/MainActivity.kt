@@ -168,7 +168,7 @@ class MainActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.help_title)
             .setItems(titles) { _, which -> showHelpTopic(which) }
-            .setNegativeButton(R.string.help_close, null)
+            .setNegativeButton(R.string.navigate_up, null)
             .show()
     }
 

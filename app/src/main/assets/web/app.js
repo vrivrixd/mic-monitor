@@ -9,6 +9,43 @@
   /* Um bloco abaixo deste pico conta como pausa e pode sair sem ninguem ouvir. */
   var QUIET_PEAK = 0.02;
 
+  /*
+   * Idioma: primeiro a etiqueta completa do navegador, como pt-BR ou zh-TW, depois
+   * so a base, como pt ou zh, e por fim o ingles.
+   */
+  var TEXTS = window.MIC_MONITOR_TEXTS || {};
+  var BASE_TAG = { pt: 'pt-BR', zh: 'zh-CN', en: 'en' };
+  var RTL = { ar: true };
+
+  function pickLanguage() {
+    var wanted = [];
+    if (navigator.languages) wanted = wanted.concat(navigator.languages);
+    if (navigator.language) wanted.push(navigator.language);
+    for (var i = 0; i < wanted.length; i++) {
+      var tag = String(wanted[i]);
+      if (TEXTS[tag]) return tag;
+      var base = tag.split('-')[0].toLowerCase();
+      if (TEXTS[BASE_TAG[base]]) return BASE_TAG[base];
+      if (TEXTS[base]) return base;
+    }
+    return 'en';
+  }
+
+  var LANG = pickLanguage();
+  var T = TEXTS[LANG] || TEXTS.en || {};
+
+  function t(key) {
+    return T[key] || (TEXTS.en && TEXTS.en[key]) || key;
+  }
+
+  document.documentElement.lang = LANG;
+  if (RTL[LANG.split('-')[0].toLowerCase()]) document.documentElement.dir = 'rtl';
+
+  var marked = document.querySelectorAll('[data-i18n]');
+  for (var m = 0; m < marked.length; m++) {
+    marked[m].textContent = t(marked[m].getAttribute('data-i18n'));
+  }
+
   var el = {
     main: document.getElementById('main'),
     unsupported: document.getElementById('unsupported'),
@@ -75,7 +112,7 @@
 
     var Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) {
-      setStatus('Este navegador não tem suporte à Web Audio API.', true);
+      setStatus(t('noWebAudio'), true);
       return;
     }
 
@@ -194,7 +231,7 @@
       /* Raro depois do clique em Iniciar, mas o caminho de volta fica aberto. */
       el.controls.hidden = true;
       el.enable.hidden = false;
-      setStatus('Clique para começar a ouvir.', false);
+      setStatus(t('clickStart'), false);
     } else {
       el.enable.hidden = true;
       el.controls.hidden = false;
@@ -231,7 +268,7 @@
       outputs.forEach(function (device, index) {
         var option = document.createElement('option');
         option.value = device.deviceId;
-        option.textContent = device.label || ('Saída de áudio ' + (index + 1));
+        option.textContent = device.label || (t('outputFallback') + ' ' + (index + 1));
         el.output.appendChild(option);
       });
       if (chosen) el.output.value = chosen;
@@ -244,7 +281,7 @@
   el.output.addEventListener('change', function () {
     if (ctx && typeof ctx.setSinkId === 'function') {
       ctx.setSinkId(el.output.value).catch(function () {
-        setStatus('Não foi possível usar essa placa de som.', true);
+        setStatus(t('sinkFailed'), true);
       });
     }
   });
@@ -264,11 +301,7 @@
 
   function describeStream() {
     if (!config) return;
-    if (config.paused) {
-      setStatus('Pausado. Outro aplicativo do celular está gravando.', false);
-    } else {
-      setStatus('Ouvindo...', false);
-    }
+    setStatus(config.paused ? t('paused') : t('listening'), false);
   }
 
   function send(message) {
@@ -313,8 +346,8 @@
       if (ws) { try { ws.close(); } catch (e) {} }
       teardownAudio();
       hideEverything();
-      setStatus('Transmissão encerrada.', false);
-      window.alert('A transmissão foi encerrada. O aplicativo do celular voltou para o estado parado.');
+      setStatus(t('ended'), false);
+      window.alert(t('alertEnded'));
     }, 200);
   });
 
@@ -337,8 +370,7 @@
     el.mic.disabled = el.stereo.checked;
 
     if (cfg.stereo && cfg.stereoKnown && !cfg.stereoReal) {
-      el.stereoHint.textContent =
-        'Este celular não entrega estéreo real. A transmissão continua em mono.';
+      el.stereoHint.textContent = t('stereoHint');
       el.stereoHint.hidden = false;
     } else {
       el.stereoHint.hidden = true;
@@ -369,7 +401,7 @@
         else if (message.type === 'busy') {
           shuttingDown = true;
           hideEverything();
-          setStatus('Outro computador já está ouvindo.', true);
+          setStatus(t('busy'), true);
         }
         return;
       }
@@ -380,12 +412,12 @@
       teardownAudio();
       hideEverything();
       if (!shuttingDown) {
-        setStatus('Conexão perdida. Verifique se o aplicativo continua em execução e recarregue a página.', true);
+        setStatus(t('lost'), true);
       }
     };
 
     ws.onerror = function () {
-      if (!shuttingDown) setStatus('Não foi possível falar com o celular.', true);
+      if (!shuttingDown) setStatus(t('unreachable'), true);
     };
   }
 
@@ -398,7 +430,7 @@
     started = true;
     if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
     el.enable.hidden = true;
-    setStatus('Conectando ao celular.', false);
+    setStatus(t('connecting'), false);
     connect();
   }
 
@@ -416,15 +448,15 @@
       if (started) return;
       if (info.busy) {
         el.enable.hidden = true;
-        setStatus('Outro computador já está ouvindo.', true);
+        setStatus(t('busy'), true);
       } else {
         el.enable.hidden = false;
-        setStatus('Clique para começar a ouvir.', false);
+        setStatus(t('clickStart'), false);
       }
     }, function () {
       if (started) return;
       el.enable.hidden = false;
-      setStatus('Clique para começar a ouvir.', false);
+      setStatus(t('clickStart'), false);
     });
   }
 
@@ -434,7 +466,7 @@
 
   el.controls.hidden = true;
   el.enable.hidden = true;
-  setStatus('Carregando...', false);
+  setStatus(t('loading'), false);
   checkStatus();
   /* A vaga pode abrir ou fechar enquanto a pessoa olha a pagina parada. */
   statusTimer = setInterval(checkStatus, 3000);
