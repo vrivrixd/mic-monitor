@@ -6,6 +6,8 @@
   var DEFAULT_BUFFER_MS = 150;
   /* Abaixo desta folga o proximo bloco chegaria tarde demais para tocar. */
   var MIN_LEAD_SEC = 0.02;
+  /* Um bloco abaixo deste pico conta como pausa e pode sair sem ninguem ouvir. */
+  var QUIET_PEAK = 0.02;
 
   var el = {
     main: document.getElementById('main'),
@@ -37,6 +39,10 @@
   var bufferMs = DEFAULT_BUFFER_MS;
   var targetSec = DEFAULT_BUFFER_MS / 1000;
   var playTime = 0;
+  /* Verdadeiro enquanto esperamos uma pausa da fala para encolher a folga. */
+  var trimming = false;
+  /* Taxa com que o contexto atual foi criado, para nao refazer a toa. */
+  var builtForRate = 0;
   var started = false;
   var shuttingDown = false;
   var suppressUntil = 0;
@@ -60,9 +66,11 @@
     muteNode = null;
     ctx = null;
     playTime = 0;
+    trimming = false;
+    builtForRate = 0;
   }
 
-  function buildAudio() {
+  function buildAudio(cfg) {
     teardownAudio();
 
     var Ctor = window.AudioContext || window.webkitAudioContext;
@@ -71,7 +79,20 @@
       return;
     }
 
-    ctx = new Ctor({ latencyHint: 'interactive' });
+    /*
+     * A taxa do contexto precisa ser a mesma do celular. Se ela for a do aparelho de
+     * som do computador, muitas vezes 44100 contra os 48000 do celular, cada bloco de
+     * vinte milissegundos seria convertido sozinho, com o filtro recomecando do zero
+     * em cada emenda. Sao cinquenta emendas por segundo, inaudiveis no silencio e
+     * ouvidas como estalos leves por cima da fala. Igualando a taxa, cada bloco entra
+     * sem conversao nenhuma e a conversao final acontece uma vez so, na saida.
+     */
+    var wanted = (cfg && cfg.sampleRate) || 48000;
+    try {
+      ctx = new Ctor({ sampleRate: wanted, latencyHint: 'interactive' });
+    } catch (e) {
+      ctx = new Ctor({ latencyHint: 'interactive' });
+    }
     ctx.onstatechange = refreshAudioGate;
 
     muteNode = ctx.createGain();
@@ -79,8 +100,21 @@
     muteNode.connect(ctx.destination);
 
     playTime = 0;
+    trimming = false;
+    builtForRate = wanted;
     setupOutputPicker();
     resumeAudio();
+  }
+
+  /** Maior amplitude do bloco, amostrada de quatro em quatro para sair barato. */
+  function peakOf(view) {
+    var peak = 0;
+    for (var i = 0; i < view.length; i += 4) {
+      var v = view[i];
+      if (v < 0) v = -v;
+      if (v > peak) peak = v;
+    }
+    return peak / 32768;
   }
 
   function pushPcm(raw) {
@@ -99,8 +133,20 @@
     if (playTime === 0 || lead < MIN_LEAD_SEC) {
       /* Comeco, ou a folga acabou. Recomeca com o tempo escolhido no buffer. */
       playTime = now + targetSec;
+      trimming = false;
     } else if (lead > targetSec * 1.6 + 0.05) {
-      /* Folga grande demais, normalmente apos baixar o buffer. Descarta o bloco. */
+      /* A folga cresceu, porque os relogios dos dois lados nunca batem. */
+      trimming = true;
+    }
+
+    /*
+     * Descartar um bloco no meio da fala estala. Entao esperamos uma pausa: o
+     * primeiro bloco quase mudo e o que sai. Se a folga passar do teto, sai de
+     * qualquer jeito, porque atraso demais e pior.
+     */
+    if (trimming && (peakOf(view) < QUIET_PEAK || lead > targetSec * 3 + 0.4)) {
+      /* Nao agenda e nao avanca o relogio: a folga encolhe sozinha o tanto do bloco. */
+      trimming = false;
       return;
     }
 
@@ -298,10 +344,14 @@
       el.stereoHint.hidden = true;
     }
 
-    if (!ctx) {
-      buildAudio();
+    /* Taxa nova do celular pede um contexto novo, para as taxas seguirem iguais. */
+    if (!ctx || builtForRate !== cfg.sampleRate) {
+      buildAudio(cfg);
     } else {
-      if (newStream) playTime = 0;
+      if (newStream) {
+        playTime = 0;
+        trimming = false;
+      }
       refreshAudioGate();
     }
   }
