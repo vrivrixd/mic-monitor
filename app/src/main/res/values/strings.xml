@@ -37,7 +37,6 @@
     <string name="about_title">About</string>
     <string name="about_body">Mic Monitor, version %1$s.\n\nAuthor: Vitor Bruski.</string>
     <string name="help_title">Help</string>
-    <string name="help_close">Close</string>
     <string name="help_topic_about">What Mic Monitor is</string>
     <string name="help_body_about">Mic Monitor streams the audio from your phone microphone to a computer over the same Wi-Fi network. No program needs to be installed on the computer.</string>
     <string name="help_topic_start">Starting the stream</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">Some phones may stop the stream when the app is in the background in order to save battery.\n\nIf that happens, turn off battery optimization in the Mic Monitor settings. This may increase battery use, but helps keep the stream running.</string>
     <string name="notif_channel_name">Streaming in progress</string>
     <string name="notif_title">Mic Monitor running</string>
-    <string name="notif_text">Streaming the microphone at %1$s</string>
+    <string name="notif_text">Streaming the microphone</string>
     <string name="notif_paused">Paused. Another app is using the microphone.</string>
     <string name="perm_mic_needed">The app needs microphone permission to work.</string>
     <string name="error_port_busy">Could not open port %1$d. It may be in use. Choose another one in settings.</string>
     <string name="error_mic_busy">Could not access the microphone. Another app may be using it.</string>
     <string name="warn_stereo_fake">This device does not deliver real stereo. Streaming continues in mono.</string>
+    <string name="about_source">Source code on GitHub</string>
 </resources>

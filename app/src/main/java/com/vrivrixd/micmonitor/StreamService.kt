@@ -75,7 +75,7 @@ class StreamService : Service(), MicServer.Listener {
 
         val port = prefs.port
         address = NetUtils.addressFor(port)
-        startForeground(NOTIFICATION_ID, buildNotification(address))
+        startForeground(NOTIFICATION_ID, buildNotification())
 
         val newServer = MicServer(assets, port, this)
         try {
@@ -358,7 +358,7 @@ class StreamService : Service(), MicServer.Listener {
 
     // ------------------------------------------------------------- notificacao
 
-    private fun buildNotification(address: String?): Notification {
+    private fun buildNotification(): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NotificationManager::class.java)
             if (manager.getNotificationChannel(CHANNEL_ID) == null) {
@@ -382,12 +382,10 @@ class StreamService : Service(), MicServer.Listener {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notif_title))
+            // So o estado. O endereco fica na tela do aplicativo, nao na notificacao.
             .setContentText(
-                when {
-                    micSilenced -> getString(R.string.notif_paused)
-                    address != null -> getString(R.string.notif_text, address)
-                    else -> getString(R.string.address_unavailable)
-                }
+                if (micSilenced) getString(R.string.notif_paused)
+                else getString(R.string.notif_text)
             )
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
@@ -400,7 +398,7 @@ class StreamService : Service(), MicServer.Listener {
     private fun updateNotification() {
         address = NetUtils.addressFor(prefs.port)
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, buildNotification(address))
+        manager.notify(NOTIFICATION_ID, buildNotification())
         StreamState.update { it.copy(address = address) }
     }
 

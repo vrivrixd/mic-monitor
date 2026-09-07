@@ -37,7 +37,6 @@
     <string name="about_title">このアプリについて</string>
     <string name="about_body">Mic Monitor、バージョン %1$s。\n\n作者: Vitor Bruski。</string>
     <string name="help_title">ヘルプ</string>
-    <string name="help_close">閉じる</string>
     <string name="help_topic_about">Mic Monitor とは</string>
     <string name="help_body_about">Mic Monitor は、スマートフォンのマイクの音を同じ Wi-Fi ネットワーク経由でパソコンへ送ります。パソコンにソフトを入れる必要はありません。</string>
     <string name="help_topic_start">配信を始める</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">一部の端末では、電池を節約するためにアプリが背面に回ると配信が止まることがあります。\n\nその場合は Mic Monitor の設定で電池の最適化を無効にしてください。電池の消費は増えますが、配信を続けやすくなります。</string>
     <string name="notif_channel_name">配信中</string>
     <string name="notif_title">Mic Monitor 実行中</string>
-    <string name="notif_text">%1$s でマイクを配信中</string>
+    <string name="notif_text">マイクを配信中</string>
     <string name="notif_paused">一時停止。別のアプリがマイクを使用しています。</string>
     <string name="perm_mic_needed">このアプリの動作にはマイクの権限が必要です。</string>
     <string name="error_port_busy">ポート %1$d を開けませんでした。使用中の可能性があります。設定で別のポートを選んでください。</string>
     <string name="error_mic_busy">マイクにアクセスできませんでした。別のアプリが使用している可能性があります。</string>
     <string name="warn_stereo_fake">この端末は本物のステレオに対応していません。配信はモノラルで続きます。</string>
+    <string name="about_source">GitHub のソースコード</string>
 </resources>

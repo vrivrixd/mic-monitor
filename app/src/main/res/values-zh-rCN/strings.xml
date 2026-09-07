@@ -37,7 +37,6 @@
     <string name="about_title">关于</string>
     <string name="about_body">Mic Monitor，版本 %1$s。\n\n作者：Vitor Bruski。</string>
     <string name="help_title">帮助</string>
-    <string name="help_close">关闭</string>
     <string name="help_topic_about">什么是 Mic Monitor</string>
     <string name="help_body_about">Mic Monitor 可以把手机麦克风的声音通过同一个 Wi-Fi 网络传到电脑上。电脑上不需要安装任何程序。</string>
     <string name="help_topic_start">开始传输</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">有些手机为了省电，会在应用退到后台时中断传输。\n\n遇到这种情况，请在 Mic Monitor 的设置里关闭电池优化。这可能会增加耗电，但有助于让传输保持运行。</string>
     <string name="notif_channel_name">正在传输</string>
     <string name="notif_title">Mic Monitor 正在运行</string>
-    <string name="notif_text">正在 %1$s 上传输麦克风</string>
+    <string name="notif_text">正在传输麦克风</string>
     <string name="notif_paused">已暂停。另一个应用正在使用麦克风。</string>
     <string name="perm_mic_needed">应用需要麦克风权限才能工作。</string>
     <string name="error_port_busy">无法打开端口 %1$d。它可能已被占用。请在设置里另选一个。</string>
     <string name="error_mic_busy">无法访问麦克风。可能有别的应用正在使用它。</string>
     <string name="warn_stereo_fake">此设备无法提供真正的立体声。传输将继续以单声道进行。</string>
+    <string name="about_source">GitHub 上的源代码</string>
 </resources>

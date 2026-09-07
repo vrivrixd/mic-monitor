@@ -37,7 +37,6 @@
     <string name="about_title">حول</string>
     <string name="about_body">Mic Monitor، الإصدار %1$s.\n\nالمؤلف: Vitor Bruski.</string>
     <string name="help_title">المساعدة</string>
-    <string name="help_close">إغلاق</string>
     <string name="help_topic_about">ما هو Mic Monitor</string>
     <string name="help_body_about">يتيح Mic Monitor بث صوت ميكروفون هاتفك إلى حاسوب عبر شبكة Wi-Fi نفسها. لا حاجة إلى تثبيت أي برنامج على الحاسوب.</string>
     <string name="help_topic_start">بدء البث</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">قد توقف بعض الهواتف البث عندما ينتقل التطبيق إلى الخلفية، وذلك لتوفير البطارية.\n\nإذا حدث ذلك، أوقف تحسين البطارية من إعدادات Mic Monitor. قد يزيد ذلك استهلاك البطارية، لكنه يساعد على إبقاء البث نشطًا.</string>
     <string name="notif_channel_name">البث جارٍ</string>
     <string name="notif_title">Mic Monitor قيد التشغيل</string>
-    <string name="notif_text">جارٍ بث الميكروفون على %1$s</string>
+    <string name="notif_text">جارٍ بث الميكروفون</string>
     <string name="notif_paused">متوقف مؤقتًا. تطبيق آخر يستخدم الميكروفون.</string>
     <string name="perm_mic_needed">يحتاج التطبيق إلى إذن الميكروفون ليعمل.</string>
     <string name="error_port_busy">تعذّر فتح المنفذ %1$d. قد يكون مستخدمًا. اختر منفذًا آخر من الإعدادات.</string>
     <string name="error_mic_busy">تعذّر الوصول إلى الميكروفون. قد يستخدمه تطبيق آخر.</string>
     <string name="warn_stereo_fake">لا يوفر هذا الجهاز ستيريو حقيقيًا. يستمر البث بصوت أحادي.</string>
+    <string name="about_source">الشيفرة المصدرية على GitHub</string>
 </resources>

@@ -37,7 +37,6 @@
     <string name="about_title">Giới thiệu</string>
     <string name="about_body">Mic Monitor, phiên bản %1$s.\n\nTác giả: Vitor Bruski.</string>
     <string name="help_title">Trợ giúp</string>
-    <string name="help_close">Đóng</string>
     <string name="help_topic_about">Mic Monitor là gì</string>
     <string name="help_body_about">Mic Monitor truyền âm thanh từ micrô điện thoại của bạn tới máy tính qua cùng một mạng Wi-Fi. Không cần cài đặt chương trình nào trên máy tính.</string>
     <string name="help_topic_start">Bắt đầu truyền</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">Một số điện thoại có thể ngắt việc truyền khi ứng dụng chạy nền, nhằm tiết kiệm pin.\n\nNếu gặp trường hợp đó, hãy tắt tối ưu hóa pin trong cài đặt của Mic Monitor. Việc này có thể làm tốn pin hơn, nhưng giúp giữ cho việc truyền không bị ngắt.</string>
     <string name="notif_channel_name">Đang truyền</string>
     <string name="notif_title">Mic Monitor đang chạy</string>
-    <string name="notif_text">Đang truyền micrô tại %1$s</string>
+    <string name="notif_text">Đang truyền micrô</string>
     <string name="notif_paused">Tạm dừng. Một ứng dụng khác đang dùng micrô.</string>
     <string name="perm_mic_needed">Ứng dụng cần quyền micrô để hoạt động.</string>
     <string name="error_port_busy">Không mở được cổng %1$d. Cổng này có thể đang được dùng. Hãy chọn cổng khác trong cài đặt.</string>
     <string name="error_mic_busy">Không truy cập được micrô. Có thể một ứng dụng khác đang dùng.</string>
     <string name="warn_stereo_fake">Thiết bị này không cho âm thanh nổi thật. Việc truyền tiếp tục ở dạng đơn kênh.</string>
+    <string name="about_source">Mã nguồn trên GitHub</string>
 </resources>

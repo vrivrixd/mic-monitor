@@ -37,7 +37,6 @@
     <string name="about_title">О программе</string>
     <string name="about_body">Mic Monitor, версия %1$s.\n\nАвтор: Vitor Bruski.</string>
     <string name="help_title">Справка</string>
-    <string name="help_close">Закрыть</string>
     <string name="help_topic_about">Что такое Mic Monitor</string>
     <string name="help_body_about">Mic Monitor передаёт звук с микрофона телефона на компьютер по той же сети Wi-Fi. Устанавливать программы на компьютер не нужно.</string>
     <string name="help_topic_start">Запуск передачи</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">Некоторые телефоны прерывают передачу, когда приложение уходит в фон, чтобы сэкономить заряд.\n\nЕсли это произошло, отключите оптимизацию батареи в настройках Mic Monitor. Расход заряда может вырасти, но передача будет держаться.</string>
     <string name="notif_channel_name">Идёт передача</string>
     <string name="notif_title">Mic Monitor работает</string>
-    <string name="notif_text">Передача микрофона по адресу %1$s</string>
+    <string name="notif_text">Идёт передача микрофона</string>
     <string name="notif_paused">Пауза. Микрофон использует другое приложение.</string>
     <string name="perm_mic_needed">Для работы приложению нужно разрешение на доступ к микрофону.</string>
     <string name="error_port_busy">Не удалось открыть порт %1$d. Возможно, он занят. Выберите другой в настройках.</string>
     <string name="error_mic_busy">Не удалось получить доступ к микрофону. Возможно, его использует другое приложение.</string>
     <string name="warn_stereo_fake">Это устройство не даёт настоящего стерео. Передача продолжается в моно.</string>
+    <string name="about_source">Исходный код на GitHub</string>
 </resources>

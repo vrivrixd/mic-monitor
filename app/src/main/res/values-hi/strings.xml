@@ -37,7 +37,6 @@
     <string name="about_title">ऐप के बारे में</string>
     <string name="about_body">Mic Monitor, संस्करण %1$s.\n\nलेखक: Vitor Bruski.</string>
     <string name="help_title">मदद</string>
-    <string name="help_close">बंद करें</string>
     <string name="help_topic_about">Mic Monitor क्या है</string>
     <string name="help_body_about">Mic Monitor आपके फ़ोन के माइक्रोफ़ोन का ऑडियो उसी Wi-Fi नेटवर्क से किसी कंप्यूटर पर भेजता है। कंप्यूटर पर कोई प्रोग्राम इंस्टॉल करने की ज़रूरत नहीं है।</string>
     <string name="help_topic_start">प्रसारण शुरू करना</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">कुछ फ़ोन बैटरी बचाने के लिए ऐप के बैकग्राउंड में जाते ही प्रसारण रोक देते हैं।\n\nऐसा हो तो Mic Monitor की सेटिंग में बैटरी ऑप्टिमाइज़ेशन बंद कर दें। इससे बैटरी की खपत बढ़ सकती है, पर प्रसारण चालू रखने में मदद मिलती है।</string>
     <string name="notif_channel_name">प्रसारण चल रहा है</string>
     <string name="notif_title">Mic Monitor चल रहा है</string>
-    <string name="notif_text">%1$s पर माइक्रोफ़ोन का प्रसारण</string>
+    <string name="notif_text">माइक्रोफ़ोन का प्रसारण जारी है</string>
     <string name="notif_paused">रोका गया। कोई दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा है।</string>
     <string name="perm_mic_needed">काम करने के लिए ऐप को माइक्रोफ़ोन की अनुमति चाहिए।</string>
     <string name="error_port_busy">पोर्ट %1$d नहीं खुल सका। वह इस्तेमाल में हो सकता है। सेटिंग में दूसरा चुनें।</string>
     <string name="error_mic_busy">माइक्रोफ़ोन तक पहुँच नहीं हो सकी। कोई दूसरा ऐप उसे इस्तेमाल कर रहा हो सकता है।</string>
     <string name="warn_stereo_fake">यह डिवाइस असली स्टीरियो नहीं देता। प्रसारण मोनो में जारी है।</string>
+    <string name="about_source">GitHub पर सोर्स कोड</string>
 </resources>

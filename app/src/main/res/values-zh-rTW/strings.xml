@@ -37,7 +37,6 @@
     <string name="about_title">關於</string>
     <string name="about_body">Mic Monitor，版本 %1$s。\n\n作者：Vitor Bruski。</string>
     <string name="help_title">說明</string>
-    <string name="help_close">關閉</string>
     <string name="help_topic_about">什麼是 Mic Monitor</string>
     <string name="help_body_about">Mic Monitor 可以把手機麥克風的聲音透過同一個 Wi-Fi 網路傳到電腦上。電腦上不需要安裝任何程式。</string>
     <string name="help_topic_start">開始傳輸</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">有些手機為了省電，會在應用程式退到背景時中斷傳輸。\n\n遇到這種情況，請在 Mic Monitor 的設定裡關閉電池最佳化。這可能會增加耗電，但有助於讓傳輸保持運作。</string>
     <string name="notif_channel_name">正在傳輸</string>
     <string name="notif_title">Mic Monitor 正在執行</string>
-    <string name="notif_text">正在 %1$s 上傳輸麥克風</string>
+    <string name="notif_text">正在傳輸麥克風</string>
     <string name="notif_paused">已暫停。另一個應用程式正在使用麥克風。</string>
     <string name="perm_mic_needed">應用程式需要麥克風權限才能運作。</string>
     <string name="error_port_busy">無法開啟連線埠 %1$d。它可能已被占用。請在設定裡另選一個。</string>
     <string name="error_mic_busy">無法存取麥克風。可能有其他應用程式正在使用它。</string>
     <string name="warn_stereo_fake">這台裝置無法提供真正的立體聲。傳輸將繼續以單聲道進行。</string>
+    <string name="about_source">GitHub 上的原始碼</string>
 </resources>

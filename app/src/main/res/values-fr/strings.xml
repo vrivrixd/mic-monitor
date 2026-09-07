@@ -37,7 +37,6 @@
     <string name="about_title">À propos</string>
     <string name="about_body">Mic Monitor, version %1$s.\n\nAuteur : Vitor Bruski.</string>
     <string name="help_title">Aide</string>
-    <string name="help_close">Fermer</string>
     <string name="help_topic_about">Qu\'est-ce que Mic Monitor</string>
     <string name="help_body_about">Mic Monitor permet de diffuser l\'audio du microphone de votre téléphone vers un ordinateur par le même réseau Wi-Fi. Aucun programme n\'a besoin d\'être installé sur l\'ordinateur.</string>
     <string name="help_topic_start">Démarrer la diffusion</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">Certains téléphones peuvent interrompre la diffusion lorsque l\'application passe en arrière-plan, afin d\'économiser la batterie.\n\nSi cela arrive, désactivez l\'optimisation de la batterie dans les paramètres de Mic Monitor. Cela peut augmenter la consommation, mais aide à garder la diffusion active.</string>
     <string name="notif_channel_name">Diffusion en cours</string>
     <string name="notif_title">Mic Monitor en cours</string>
-    <string name="notif_text">Diffusion du microphone sur %1$s</string>
+    <string name="notif_text">Diffusion du microphone</string>
     <string name="notif_paused">En pause. Une autre application utilise le microphone.</string>
     <string name="perm_mic_needed">L\'application a besoin de l\'autorisation du microphone pour fonctionner.</string>
     <string name="error_port_busy">Impossible d\'ouvrir le port %1$d. Il est peut-être occupé. Choisissez-en un autre dans les paramètres.</string>
     <string name="error_mic_busy">Impossible d\'accéder au microphone. Une autre application l\'utilise peut-être.</string>
     <string name="warn_stereo_fake">Cet appareil ne fournit pas de vraie stéréo. La diffusion continue en mono.</string>
+    <string name="about_source">Code source sur GitHub</string>
 </resources>
