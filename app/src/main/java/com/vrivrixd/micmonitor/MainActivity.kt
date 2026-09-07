@@ -1,13 +1,16 @@
 package com.vrivrixd.micmonitor
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -66,11 +69,11 @@ class MainActivity : AppCompatActivity() {
             true
         }
         R.id.menu_help -> {
-            showHelp()
+            startActivity(Intent(this, HelpActivity::class.java))
             true
         }
         R.id.menu_about -> {
-            showDialog(R.string.about_title, getString(R.string.about_body, versionName()))
+            showAbout()
             true
         }
         else -> super.onOptionsItemSelected(item)
@@ -162,33 +165,22 @@ class MainActivity : AppCompatActivity() {
         view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null)
     }
 
-    /** A ajuda abre como lista de assuntos. Cada assunto abre em cima dela. */
-    private fun showHelp() {
-        val titles = HELP_TOPICS.map { getString(it.first) }.toTypedArray()
+    /** Versao, autor e o caminho para o codigo, que abre no navegador. */
+    private fun showAbout() {
         MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.help_title)
-            .setItems(titles) { _, which -> showHelpTopic(which) }
-            .setNegativeButton(R.string.navigate_up, null)
-            .show()
-    }
-
-    private fun showHelpTopic(index: Int) {
-        val topic = HELP_TOPICS.getOrNull(index) ?: return
-        MaterialAlertDialogBuilder(this)
-            .setTitle(topic.first)
-            .setMessage(topic.second)
-            // Fechar o assunto, pelo botao ou pelo voltar, devolve a lista.
-            .setPositiveButton(R.string.dialog_ok) { _, _ -> showHelp() }
-            .setOnCancelListener { showHelp() }
-            .show()
-    }
-
-    private fun showDialog(titleRes: Int, message: String) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(titleRes)
-            .setMessage(message)
+            .setTitle(R.string.about_title)
+            .setMessage(getString(R.string.about_body, versionName()))
             .setPositiveButton(R.string.dialog_ok, null)
+            .setNeutralButton(R.string.about_source) { _, _ -> openSource() }
             .show()
+    }
+
+    private fun openSource() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SOURCE_URL)))
+        } catch (e: ActivityNotFoundException) {
+            Log.w("MainActivity", "Nenhum navegador para abrir o codigo fonte", e)
+        }
     }
 
     private fun versionName(): String = try {
@@ -198,15 +190,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        /** Titulo e texto de cada assunto da ajuda, na ordem em que aparecem. */
-        private val HELP_TOPICS = listOf(
-            R.string.help_topic_about to R.string.help_body_about,
-            R.string.help_topic_start to R.string.help_body_start,
-            R.string.help_topic_port to R.string.help_body_port,
-            R.string.help_topic_controls to R.string.help_body_controls,
-            R.string.help_topic_buffer to R.string.help_body_buffer,
-            R.string.help_topic_output to R.string.help_body_output,
-            R.string.help_topic_battery to R.string.help_body_battery
-        )
+        private const val SOURCE_URL = "https://github.com/vrivrixd/mic-monitor"
     }
 }

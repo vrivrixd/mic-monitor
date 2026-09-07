@@ -13,7 +13,7 @@ android {
         targetSdk = 35
         // O numero interno precisa subir a cada envio, senao o Android recusa a
         // atualizacao. O nome visivel continua em 1.0 ate o projeto ficar pronto.
-        versionCode = 9
+        versionCode = 10
         versionName = "1.0"
     }
 

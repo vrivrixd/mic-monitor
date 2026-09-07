@@ -37,7 +37,6 @@
     <string name="about_title">Informazioni</string>
     <string name="about_body">Mic Monitor, versione %1$s.\n\nAutore: Vitor Bruski.</string>
     <string name="help_title">Guida</string>
-    <string name="help_close">Chiudi</string>
     <string name="help_topic_about">Che cos\'è Mic Monitor</string>
     <string name="help_body_about">Mic Monitor consente di trasmettere l\'audio del microfono del telefono a un computer sulla stessa rete Wi-Fi. Non è necessario installare alcun programma sul computer.</string>
     <string name="help_topic_start">Avviare la trasmissione</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">Alcuni telefoni possono interrompere la trasmissione quando l\'applicazione resta in secondo piano, per risparmiare batteria.\n\nSe succede, disattiva l\'ottimizzazione della batteria nelle impostazioni di Mic Monitor. Il consumo può aumentare, ma aiuta a mantenere attiva la trasmissione.</string>
     <string name="notif_channel_name">Trasmissione in corso</string>
     <string name="notif_title">Mic Monitor in esecuzione</string>
-    <string name="notif_text">Trasmissione del microfono su %1$s</string>
+    <string name="notif_text">Trasmissione del microfono</string>
     <string name="notif_paused">In pausa. Un\'altra app sta usando il microfono.</string>
     <string name="perm_mic_needed">L\'applicazione ha bisogno dell\'autorizzazione al microfono per funzionare.</string>
     <string name="error_port_busy">Impossibile aprire la porta %1$d. Potrebbe essere occupata. Scegline un\'altra nelle impostazioni.</string>
     <string name="error_mic_busy">Impossibile accedere al microfono. Un\'altra app potrebbe starlo usando.</string>
     <string name="warn_stereo_fake">Questo dispositivo non fornisce uno stereo reale. La trasmissione continua in mono.</string>
+    <string name="about_source">Codice sorgente su GitHub</string>
 </resources>

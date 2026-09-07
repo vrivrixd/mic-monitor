@@ -37,7 +37,6 @@
     <string name="about_title">Über</string>
     <string name="about_body">Mic Monitor, Version %1$s.\n\nAutor: Vitor Bruski.</string>
     <string name="help_title">Hilfe</string>
-    <string name="help_close">Schließen</string>
     <string name="help_topic_about">Was Mic Monitor ist</string>
     <string name="help_body_about">Mic Monitor überträgt den Ton des Telefonmikrofons über dasselbe WLAN an einen Computer. Auf dem Computer muss kein Programm installiert werden.</string>
     <string name="help_topic_start">Übertragung starten</string>
@@ -54,10 +53,11 @@
     <string name="help_body_battery">Manche Telefone unterbrechen die Übertragung, wenn die App in den Hintergrund wechselt, um Akku zu sparen.\n\nDeaktivieren Sie in diesem Fall die Akkuoptimierung in den Einstellungen von Mic Monitor. Das kann den Akkuverbrauch erhöhen, hilft aber, die Übertragung aufrechtzuerhalten.</string>
     <string name="notif_channel_name">Übertragung läuft</string>
     <string name="notif_title">Mic Monitor läuft</string>
-    <string name="notif_text">Mikrofon wird übertragen auf %1$s</string>
+    <string name="notif_text">Mikrofon wird übertragen</string>
     <string name="notif_paused">Pausiert. Eine andere App verwendet das Mikrofon.</string>
     <string name="perm_mic_needed">Die App benötigt die Mikrofonberechtigung, um zu funktionieren.</string>
     <string name="error_port_busy">Port %1$d konnte nicht geöffnet werden. Er ist möglicherweise belegt. Wählen Sie in den Einstellungen einen anderen.</string>
     <string name="error_mic_busy">Kein Zugriff auf das Mikrofon. Möglicherweise verwendet es eine andere App.</string>
     <string name="warn_stereo_fake">Dieses Gerät liefert kein echtes Stereo. Die Übertragung läuft weiter in Mono.</string>
+    <string name="about_source">Quellcode auf GitHub</string>
 </resources>
