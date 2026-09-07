@@ -17,25 +17,31 @@ android {
         versionName = "1.0"
     }
 
-    // Chave fixa guardada no projeto. Sem ela o servidor de compilacao criaria uma
-    // chave diferente a cada execucao e o aparelho recusaria a instalacao por cima.
+    // A chave de assinatura nao fica no repositorio. Ela e colocada em
+    // app/micmonitor.p12 na hora de compilar, e as senhas vem do ambiente.
+    // Sem o arquivo, a compilacao acontece do mesmo jeito, so que sem assinatura.
+    val keystore = file("micmonitor.p12")
+    val signed = keystore.exists()
+
     signingConfigs {
-        create("stable") {
-            storeFile = file("micmonitor.p12")
-            storeType = "PKCS12"
-            storePassword = "micmonitor"
-            keyAlias = "micmonitor"
-            keyPassword = "micmonitor"
+        if (signed) {
+            create("stable") {
+                storeFile = keystore
+                storeType = "PKCS12"
+                storePassword = System.getenv("MIC_MONITOR_STORE_PASSWORD").orEmpty()
+                keyAlias = System.getenv("MIC_MONITOR_KEY_ALIAS").orEmpty()
+                keyPassword = System.getenv("MIC_MONITOR_KEY_PASSWORD").orEmpty()
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("stable")
+            if (signed) signingConfig = signingConfigs.getByName("stable")
         }
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("stable")
+            if (signed) signingConfig = signingConfigs.getByName("stable")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

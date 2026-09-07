@@ -99,13 +99,30 @@ para instalar de fonte desconhecida.
 
 ## Assinatura
 
-O APK é assinado com a chave guardada em `app/micmonitor.p12`, com senha e apelido
-`micmonitor`. Ela é fixa de propósito: uma versão nova instala por cima da anterior sem
-precisar desinstalar, o que só funciona quando todas as compilações usam a mesma chave.
+A chave de assinatura não faz parte do repositório. Sem ela, os comandos acima funcionam
+igual e produzem um APK sem assinatura, que serve para estudar o código mas não instala
+no aparelho.
 
-Para usar uma chave própria, gere a sua e troque o bloco `signingConfigs` em
-`app/build.gradle.kts`. Quem trocar a chave precisa desinstalar a versão antiga antes de
-instalar a nova.
+Para gerar um APK instalável, crie a sua própria chave e coloque o arquivo em
+`app/micmonitor.p12`:
+
+```
+keytool -genkeypair -v -storetype PKCS12 -keystore app/micmonitor.p12 \
+        -alias micmonitor -keyalg RSA -keysize 2048 -validity 20000
+```
+
+Depois informe as senhas por variáveis de ambiente e compile:
+
+```
+export MIC_MONITOR_STORE_PASSWORD=sua-senha
+export MIC_MONITOR_KEY_ALIAS=micmonitor
+export MIC_MONITOR_KEY_PASSWORD=sua-senha
+gradle assembleRelease
+```
+
+Quem compila com uma chave própria gera um aplicativo que o Android considera diferente
+do publicado nas versões deste repositório. Para trocar de um para o outro é preciso
+desinstalar antes.
 
 ## Estrutura
 
