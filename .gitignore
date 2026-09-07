@@ -10,3 +10,5 @@ captures/
 *.apk
 *.aab
 *.keystore
+*.p12
+*.jks
