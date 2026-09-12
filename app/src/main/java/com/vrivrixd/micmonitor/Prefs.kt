@@ -23,6 +23,10 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_GAIN, DEFAULT_GAIN_PERCENT).coerceIn(0, 100)
         set(value) = sp.edit().putInt(KEY_GAIN, value.coerceIn(0, 100)).apply()
 
+    /** O mesmo ganho convertido para decibeis, que e o que a captura usa. */
+    val gainDb: Float
+        get() = percentToDb(gainPercent)
+
     /** Uma das constantes de [MicSource]. */
     var micSource: String
         get() = sp.getString(KEY_SOURCE, MicSource.DEFAULT) ?: MicSource.DEFAULT
