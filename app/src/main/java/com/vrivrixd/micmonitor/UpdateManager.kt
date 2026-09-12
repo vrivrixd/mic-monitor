@@ -24,17 +24,18 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Procura uma versao nova no GitHub, baixa e entrega ao instalador do Android.
+ * Looks for a new version on GitHub, downloads it and hands it to the Android
+ * installer.
  *
- * A consulta nao precisa de senha nem de conta. A propria publicacao diz o nome do
- * arquivo e o endereco de onde baixar, entao o aplicativo nunca precisa adivinhar.
+ * The lookup needs no password and no account. The release itself names the file
+ * and the address to fetch it from, so the app never has to guess.
  *
- * Nada disso aparece quando o aparelho esta sem rede ou quando o GitHub nao
- * responde: a procura falha calada, porque ela nao e o motivo de abrir o programa.
+ * None of this shows up when the phone has no network or when GitHub does not
+ * answer: the lookup fails quietly, because it is not the reason to open the app.
  */
 class UpdateManager(private val activity: AppCompatActivity) {
 
-    /** O que a ultima publicacao diz sobre si mesma. */
+    /** What the latest release says about itself. */
     data class Release(
         val version: String,
         val fileName: String,
@@ -46,7 +47,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
 
     private var worker: Thread? = null
 
-    /** Conexao do download, para poder ser cortada de fora. */
+    /** The download connection, so that it can be cut from the outside. */
     @Volatile
     private var live: HttpURLConnection? = null
 
@@ -56,10 +57,10 @@ class UpdateManager(private val activity: AppCompatActivity) {
     private var dialog: AlertDialog? = null
     private var progress: DialogDownloadBinding? = null
 
-    /** Ultima porcentagem mostrada, para nao repetir a cada pedaco que chega. */
+    /** Last percentage shown, so every incoming block does not repeat it. */
     private var shownPercent = -1
 
-    /** Versao que espera a permissao de instalar voltar da tela do sistema. */
+    /** The version waiting for the install permission to come back. */
     private var waiting: Release? = null
 
     private val permissionLauncher = activity.registerForActivityResult(
@@ -71,32 +72,32 @@ class UpdateManager(private val activity: AppCompatActivity) {
     }
 
     /**
-     * Procura uma versao nova, uma vez por execucao.
-     * A consulta acontece fora da thread principal e a resposta volta para ela.
+     * Looks for a new version, once per run.
+     * The lookup happens off the main thread and the answer comes back to it.
      */
     fun checkOnStart() {
-        // Em teste a janela volta toda vez, mesmo sem versao nova.
+        // Under test the dialog comes back every time, even without a new version.
         if (checkedThisRun && !FORCE_DIALOG) return
         checkedThisRun = true
         Thread({
             val release = try {
                 fetch()
             } catch (e: Exception) {
-                Log.d(TAG, "Procura por atualizacao falhou", e)
+                Log.d(TAG, "Update lookup failed", e)
                 null
             } ?: return@Thread
             main.post { onRelease(release) }
         }, "MicMonitor-Update").start()
     }
 
-    /** Encerra o que estiver em andamento quando a tela sai. */
+    /** Ends whatever is in flight when the screen goes away. */
     fun release() {
         cancel()
         worker = null
         dismiss()
     }
 
-    // ------------------------------------------------------------------ consulta
+    // -------------------------------------------------------------------- lookup
 
     private fun fetch(): Release? {
         val connection = (URL(API).openConnection() as HttpURLConnection).apply {
@@ -143,7 +144,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
             .show()
     }
 
-    /** Compara numero a numero, entao 1.10 e maior que 1.9 e nao menor. */
+    /** Compares number by number, so 1.10 is greater than 1.9 instead of smaller. */
     private fun isNewer(remote: String, local: String): Boolean {
         val there = numbers(remote)
         val here = numbers(local)
@@ -164,7 +165,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
         "?"
     }
 
-    // ------------------------------------------------------------------- download
+    // ------------------------------------------------------------------ download
 
     private fun start(release: Release) {
         if (!canInstall()) {
@@ -173,15 +174,15 @@ class UpdateManager(private val activity: AppCompatActivity) {
         }
         val ready = finished(release)
         if (ready != null) {
-            // Ja esta no aparelho inteiro, de uma recusa anterior. Baixar de novo
-            // gastaria rede e tempo por nada.
+            // The whole thing is already on the phone, from an earlier refusal.
+            // Fetching it again would spend network and time for nothing.
             install(ready)
             return
         }
         download(release)
     }
 
-    /** O arquivo completo daquela versao, se ele ja estiver guardado. */
+    /** The complete file of that version, if it is already stored. */
     private fun finished(release: Release): File? {
         val file = fileFor(release)
         if (!file.isFile) return null
@@ -192,14 +193,14 @@ class UpdateManager(private val activity: AppCompatActivity) {
         return file
     }
 
-    private fun folder(): File = File(activity.cacheDir, "atualizacoes").apply { mkdirs() }
+    private fun folder(): File = File(activity.cacheDir, "updates").apply { mkdirs() }
 
     private fun fileFor(release: Release): File = File(folder(), release.fileName)
 
     private fun download(release: Release) {
         val target = fileFor(release)
         val part = File(target.path + ".part")
-        // Versoes antigas que ficaram para tras so ocupam espaco.
+        // Older versions left behind only take up room.
         folder().listFiles()?.forEach {
             if (it.name != target.name && it.name != part.name) it.delete()
         }
@@ -213,7 +214,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
             try {
                 done = fetchFile(release, part)
             } catch (e: Exception) {
-                Log.w(TAG, "Download da atualizacao falhou", e)
+                Log.w(TAG, "The update download failed", e)
             }
             if (done && !canceled) {
                 part.renameTo(target)
@@ -222,12 +223,12 @@ class UpdateManager(private val activity: AppCompatActivity) {
                     install(target)
                 }
             } else {
-                // Pedaco solto nao serve para nada e ainda ocupa espaco.
+                // A loose piece is good for nothing and still takes up room.
                 part.delete()
-                val avisar = !canceled
+                val warn = !canceled
                 main.post {
                     dismiss()
-                    if (avisar) fail()
+                    if (warn) fail()
                 }
             }
         }, "MicMonitor-Download").also { it.start() }
@@ -271,7 +272,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
         main.post { showPercent(percent) }
     }
 
-    // ------------------------------------------------------------------- janelas
+    // ------------------------------------------------------------------ windows
 
     private fun showProgress(release: Release) {
         val binding = DialogDownloadBinding.inflate(activity.layoutInflater)
@@ -286,7 +287,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
             .setCancelable(false)
             .setNegativeButton(R.string.dialog_cancel) { _, _ -> cancel() }
             .show()
-        Log.i(TAG, "Baixando " + release.fileName)
+        Log.i(TAG, "Downloading " + release.fileName)
     }
 
     private fun showPercent(percent: Int) {
@@ -296,14 +297,15 @@ class UpdateManager(private val activity: AppCompatActivity) {
         binding.downloadBar.progress = percent
         val text = activity.getString(R.string.update_percent, percent)
         binding.downloadPercent.text = text
-        // De um em um: quem ouve a tela precisa saber exatamente onde o download
-        // esta, e nao so de quanto em quanto ele passa.
+        // One by one: whoever listens to the screen needs to know exactly where the
+        // download stands, not roughly how far along it has gone.
         binding.downloadPercent.announceForAccessibility(text)
     }
 
     /**
-     * Cancelar precisa cortar a conexao, e nao so avisar a thread. Uma leitura de
-     * rede parada nao acorda com interrupcao, e a pessoa ficaria esperando.
+     * Cancelling has to cut the connection, and not merely tell the thread. A
+     * network read that is parked does not wake up on an interrupt, and the person
+     * would be left waiting.
      */
     private fun cancel() {
         canceled = true
@@ -325,11 +327,11 @@ class UpdateManager(private val activity: AppCompatActivity) {
         Snackbar.make(root, R.string.update_failed, Snackbar.LENGTH_LONG).show()
     }
 
-    // ---------------------------------------------------------------- instalacao
+    // ---------------------------------------------------------------- installing
 
     /**
-     * Do Android 8 em diante cada aplicativo precisa de autorizacao propria para
-     * instalar outro. Sem ela o instalador nem abre.
+     * From Android 8 on, every app needs its own authorisation to install another
+     * one. Without it the installer does not even open.
      */
     private fun canInstall(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
@@ -348,7 +350,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
                 try {
                     permissionLauncher.launch(intent)
                 } catch (e: ActivityNotFoundException) {
-                    Log.w(TAG, "Sem tela de permissao de instalacao", e)
+                    Log.w(TAG, "No install permission screen on this phone", e)
                     waiting = null
                     fail()
                 }
@@ -358,16 +360,16 @@ class UpdateManager(private val activity: AppCompatActivity) {
     }
 
     /**
-     * Entrega o arquivo ao instalador do sistema.
+     * Hands the file to the system installer.
      *
-     * O caminho vai como endereco de conteudo, e nao como caminho de arquivo, porque
-     * desde o Android 7 passar o caminho direto derruba o aplicativo.
+     * The path travels as a content address and not as a file path, because since
+     * Android 7 passing the path directly brings the app down.
      */
     private fun install(file: File) {
         val uri = try {
             FileProvider.getUriForFile(activity, activity.packageName + PROVIDER, file)
         } catch (e: IllegalArgumentException) {
-            Log.e(TAG, "Arquivo fora das pastas que o provedor conhece", e)
+            Log.e(TAG, "File outside the folders the provider knows about", e)
             fail()
             return
         }
@@ -378,7 +380,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
         try {
             activity.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Nenhum instalador atendeu", e)
+            Log.e(TAG, "No installer answered", e)
             fail()
         }
     }
@@ -390,13 +392,13 @@ class UpdateManager(private val activity: AppCompatActivity) {
             "https://api.github.com/repos/vrivrixd/mic-monitor/releases/latest"
 
         /**
-         * Enquanto estiver ligado, o aviso aparece toda vez que o aplicativo abre,
-         * mesmo sem versao nova. Serve so para experimentar a janela e o download.
-         * Precisa voltar para falso antes de publicar.
+         * While this is on, the notice shows up every time the app opens, even
+         * without a new version. It exists only to try the window and the download
+         * out, and has to be off in a published build.
          */
-        const val FORCE_DIALOG = true
+        const val FORCE_DIALOG = false
 
-        /** Uma procura por execucao, senao girar a tela traria a janela de volta. */
+        /** One lookup per run, otherwise rotating the screen would bring it back. */
         @Volatile
         private var checkedThisRun = false
     }

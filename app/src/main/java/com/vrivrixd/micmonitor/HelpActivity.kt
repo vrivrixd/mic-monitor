@@ -7,11 +7,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.vrivrixd.micmonitor.databinding.ActivityHelpBinding
 
 /**
- * Ajuda em forma de tela, com a lista de assuntos.
+ * Help as a screen, holding the list of topics.
  *
- * E uma tela de verdade, e nao um dialogo, para que o navegar para cima seja o
- * primeiro elemento, igual as outras telas do aplicativo. Cada assunto abre em um
- * dialogo por cima, e o botao OK devolve a lista.
+ * A screen and not a dialog, so that navigate up is the first element, like
+ * everywhere else in the app. Each topic opens in a dialog on top, and its OK
+ * button gives the list back.
  */
 class HelpActivity : AppCompatActivity() {
 
@@ -49,7 +49,7 @@ class HelpActivity : AppCompatActivity() {
     }
 
     companion object {
-        /** Titulo e texto de cada assunto, na ordem em que aparecem. */
+        /** Title and body of each topic, in the order they are listed. */
         private val TOPICS = listOf(
             R.string.help_topic_about to R.string.help_body_about,
             R.string.help_topic_start to R.string.help_body_start,

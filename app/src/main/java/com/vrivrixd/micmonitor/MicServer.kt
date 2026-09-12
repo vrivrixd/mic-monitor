@@ -17,11 +17,11 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Servidor HTTP e WebSocket embarcado.
+ * Embedded HTTP and WebSocket server.
  *
- * Serve a pagina guardada em assets/web. Normalmente aceita um ouvinte por vez, e
- * aceita varios quando a pessoa liga isso nas configuracoes. O audio vai em quadros
- * binarios de PCM cru. Os comandos vem em quadros de texto.
+ * Serves the page kept in assets/web. It normally takes one listener at a time, and
+ * takes several when that is turned on in settings. Audio travels in binary frames
+ * of raw PCM. Commands arrive in text frames.
  */
 class MicServer(
     private val assets: AssetManager,
@@ -31,17 +31,17 @@ class MicServer(
 ) {
 
     interface Listener {
-        /** Comando recebido de alguma pagina. */
+        /** A command arrived from one of the pages. */
         fun onCommand(command: JSONObject)
 
-        /** Quantos ouvintes existem agora. */
+        /** How many listeners there are now. */
         fun onClientCountChanged(count: Int)
 
-        /** Estado atual que as paginas precisam conhecer. */
+        /** Current state that the pages need to know about. */
         fun configJson(): JSONObject
     }
 
-    /** Muda junto com a preferencia, sem precisar reabrir a porta. */
+    /** Follows the preference, with no need to reopen the port. */
     @Volatile
     var allowMultiple: Boolean = allowMultiple
 
@@ -50,14 +50,14 @@ class MicServer(
 
     private var serverSocket: ServerSocket? = null
 
-    /** Cada ouvinte tem a fila propria, entao um computador lento nao atrasa os outros. */
+    /** Every listener has its own queue, so a slow computer never delays the others. */
     private val sessions = CopyOnWriteArrayList<Session>()
 
     fun clientCount(): Int = sessions.size
 
     fun hasClient(): Boolean = sessions.isNotEmpty()
 
-    /** Verdadeiro quando um recem chegado seria recusado. */
+    /** True when a newcomer would be turned away. */
     fun isBusy(): Boolean = !allowMultiple && sessions.isNotEmpty()
 
     @Throws(IOException::class)
@@ -80,14 +80,14 @@ class MicServer(
         serverSocket = null
     }
 
-    /** Envia um bloco de PCM a todos os ouvintes. O quadro e montado uma vez so. */
+    /** Sends a PCM block to every listener. The frame is built only once. */
     fun sendPcm(data: ByteArray, length: Int) {
         if (sessions.isEmpty()) return
         val packet = frame(OP_BINARY, data, length)
         for (session in sessions) session.enqueue(packet)
     }
 
-    /** Reenvia o estado atual a todos os ouvintes. */
+    /** Sends the current state to every listener again. */
     fun sendConfig() {
         if (sessions.isEmpty()) return
         val text = listener.configJson().toString().toByteArray(Charsets.UTF_8)
@@ -100,7 +100,7 @@ class MicServer(
             val connection = try {
                 socket.accept()
             } catch (e: IOException) {
-                if (!closed) Log.w(TAG, "Fim do laco de aceitacao", e)
+                if (!closed) Log.w(TAG, "End of the accept loop", e)
                 return
             }
             Thread({ handle(connection) }, "MicMonitor-Conn").start()
@@ -134,7 +134,7 @@ class MicServer(
                 socket.close()
             }
         } catch (e: IOException) {
-            Log.d(TAG, "Conexao encerrada", e)
+            Log.d(TAG, "Connection closed", e)
             try {
                 socket.close()
             } catch (_: IOException) {
@@ -142,12 +142,12 @@ class MicServer(
         }
     }
 
-    // ---------------------------------------------------------------- estatico
+    // ------------------------------------------------------------------- static
 
     private fun serveStatic(output: OutputStream, path: String) {
         if (path == "/status") {
-            // A pagina consulta isto antes de comecar, para saber se ha vaga sem
-            // precisar ocupar nenhuma.
+            // The page asks this before it starts, to learn whether there is room
+            // without taking any.
             val json = JSONObject().put("busy", isBusy()).toString().toByteArray(Charsets.UTF_8)
             writeResponse(output, "200 OK", "application/json; charset=utf-8", json)
             return
@@ -160,14 +160,14 @@ class MicServer(
             else -> null
         }
         if (asset == null) {
-            writeResponse(output, "404 Not Found", TEXT_MIME, "Pagina nao encontrada".toByteArray())
+            writeResponse(output, "404 Not Found", TEXT_MIME, "Page not found".toByteArray())
             return
         }
         val body = try {
             assets.open(asset).use { it.readBytes() }
         } catch (e: IOException) {
-            Log.e(TAG, "Falha ao ler o recurso " + asset, e)
-            writeResponse(output, "500 Internal Server Error", TEXT_MIME, "Erro interno".toByteArray())
+            Log.e(TAG, "Could not read the asset " + asset, e)
+            writeResponse(output, "500 Internal Server Error", TEXT_MIME, "Internal error".toByteArray())
             return
         }
         writeResponse(output, "200 OK", mimeOf(asset), body)
@@ -193,7 +193,7 @@ class MicServer(
         output.flush()
     }
 
-    // --------------------------------------------------------------- websocket
+    // ---------------------------------------------------------------- websocket
 
     private fun serveWebSocket(
         socket: Socket,
@@ -203,7 +203,7 @@ class MicServer(
     ) {
         val key = headers["sec-websocket-key"]
         if (key == null) {
-            writeResponse(output, "400 Bad Request", TEXT_MIME, "Requisicao invalida".toByteArray())
+            writeResponse(output, "400 Bad Request", TEXT_MIME, "Bad request".toByteArray())
             socket.close()
             return
         }
@@ -222,8 +222,8 @@ class MicServer(
 
         val session = Session(socket, output)
 
-        // A entrada na lista acontece de uma vez so, senao dois navegadores que
-        // chegam juntos poderiam passar os dois pela conferencia da vaga.
+        // Joining the list happens in one step, otherwise two browsers arriving
+        // together could both get past the check for a free slot.
         val accepted = synchronized(sessions) {
             if (isBusy()) {
                 false
@@ -245,7 +245,7 @@ class MicServer(
         try {
             readLoop(input, session)
         } catch (e: IOException) {
-            Log.d(TAG, "Leitura de um ouvinte encerrada", e)
+            Log.d(TAG, "Reading from a listener ended", e)
         } finally {
             sessions.remove(session)
             session.close()
@@ -253,7 +253,7 @@ class MicServer(
         }
     }
 
-    /** Estado atual para um ouvinte so, logo que ele entra. */
+    /** Current state for a single listener, right as it joins. */
     private fun sendConfigTo(session: Session) {
         val text = listener.configJson().toString().toByteArray(Charsets.UTF_8)
         session.enqueue(frame(OP_TEXT, text, text.size))
@@ -304,13 +304,13 @@ class MicServer(
         try {
             listener.onCommand(JSONObject(text))
         } catch (e: Exception) {
-            Log.w(TAG, "Comando invalido: " + text, e)
+            Log.w(TAG, "Invalid command: " + text, e)
         }
     }
 
     private fun readByte(input: InputStream): Int {
         val v = input.read()
-        if (v < 0) throw IOException("fim inesperado")
+        if (v < 0) throw IOException("unexpected end")
         return v
     }
 
@@ -318,12 +318,12 @@ class MicServer(
         var off = 0
         while (off < count) {
             val r = input.read(buf, off, count - off)
-            if (r < 0) throw IOException("fim inesperado")
+            if (r < 0) throw IOException("unexpected end")
             off += r
         }
     }
 
-    /** Monta um quadro do servidor para o cliente, sempre sem mascara. */
+    /** Builds a frame from the server to the client, never masked. */
     private fun frame(opcode: Int, data: ByteArray, length: Int): ByteArray {
         val out = ByteArrayOutputStream(length + 10)
         out.write(0x80 or opcode)
@@ -356,11 +356,11 @@ class MicServer(
                 return out.toString("ISO-8859-1").trimEnd('\r')
             }
             out.write(b)
-            if (out.size() > 8192) throw IOException("cabecalho longo demais")
+            if (out.size() > 8192) throw IOException("header too long")
         }
     }
 
-    /** Um ouvinte conectado, com fila propria para nao travar a captura. */
+    /** One connected listener, with a queue of its own so the capture never stalls. */
     private inner class Session(val socket: Socket, val output: OutputStream) {
 
         private val queue = ArrayBlockingQueue<ByteArray>(120)
@@ -380,7 +380,7 @@ class MicServer(
                     }
                 } catch (_: InterruptedException) {
                 } catch (e: IOException) {
-                    Log.d(TAG, "Escrita encerrada", e)
+                    Log.d(TAG, "Writing ended", e)
                 } finally {
                     closeSocket()
                 }
@@ -391,16 +391,17 @@ class MicServer(
 
         fun enqueue(data: ByteArray) {
             if (closedFlag.get()) return
-            // Rede lenta descarta o audio mais antigo em vez de acumular atraso.
+            // A slow network drops the oldest audio instead of piling up delay.
             while (!queue.offer(data)) {
                 if (queue.poll() == null) return
             }
         }
 
         /**
-         * Encerra sem escrever nada, entao pode vir de qualquer thread, inclusive a
-         * principal. Escrever em socket fora de uma thread de rede derruba o aplicativo,
-         * e fechar a conexao ja avisa o navegador do outro lado.
+         * Closes without writing anything, so it can come from any thread, the main
+         * one included. Writing to a socket outside a network thread brings the app
+         * down, and closing the connection already tells the browser on the other
+         * side.
          */
         fun close() {
             if (!closedFlag.compareAndSet(false, true)) return
@@ -410,7 +411,7 @@ class MicServer(
             closeSocket()
         }
 
-        /** Manda um ultimo quadro e encerra. So pode ser chamado da thread da conexao. */
+        /** Sends one last frame and closes. Only the connection thread may call it. */
         fun writeAndClose(data: ByteArray) {
             try {
                 output.write(data)

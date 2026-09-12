@@ -1,4 +1,4 @@
-/* Mic Monitor - pagina de escuta. */
+/* Mic Monitor - listening page. */
 (function () {
   'use strict';
 
@@ -6,14 +6,14 @@
   var DEFAULT_BUFFER_MS = 150;
   var MIN_BUFFER_MS = 30;
   var MAX_BUFFER_MS = 1000;
-  /* Abaixo desta folga o proximo bloco chegaria tarde demais para tocar. */
+  /* Below this much slack the next block would arrive too late to play. */
   var MIN_LEAD_SEC = 0.02;
-  /* Um bloco abaixo deste pico conta como pausa e pode sair sem ninguem ouvir. */
+  /* A block under this peak counts as a pause and can go without anyone hearing. */
   var QUIET_PEAK = 0.02;
 
   /*
-   * Idioma: primeiro a etiqueta completa do navegador, como pt-BR ou zh-TW, depois
-   * so a base, como pt ou zh, e por fim o ingles.
+   * Language: first the full browser tag, such as pt-BR or zh-TW, then only the
+   * base, such as pt or zh, and English as the last resort.
    */
   var TEXTS = window.MIC_MONITOR_TEXTS || {};
   var BASE_TAG = { pt: 'pt-BR', zh: 'zh-CN', en: 'en' };
@@ -77,9 +77,9 @@
   var bufferMs = DEFAULT_BUFFER_MS;
   var targetSec = DEFAULT_BUFFER_MS / 1000;
   var playTime = 0;
-  /* Verdadeiro enquanto esperamos uma pausa da fala para encolher a folga. */
+  /* True while we wait for a pause in the speech to shrink the slack. */
   var trimming = false;
-  /* Taxa com que o contexto atual foi criado, para nao refazer a toa. */
+  /* Rate the current context was created with, to avoid rebuilding it for nothing. */
   var builtForRate = 0;
   var started = false;
   var shuttingDown = false;
@@ -88,9 +88,9 @@
 
   /* --------------------------------------------------------------------- audio
    *
-   * Cada bloco que chega vira um trecho agendado na linha do tempo do som. Quem
-   * toca e a propria thread de audio do navegador, entao um engasgo da pagina nao
-   * corta mais o som: a folga escolhida no buffer absorve o atraso.
+   * Every block that arrives becomes a piece scheduled on the audio timeline. What
+   * plays it is the browser audio thread itself, so a stutter in the page no longer
+   * cuts the sound: the slack chosen in the buffer absorbs the delay.
    */
 
   function teardownAudio() {
@@ -118,12 +118,12 @@
     }
 
     /*
-     * A taxa do contexto precisa ser a mesma do celular. Se ela for a do aparelho de
-     * som do computador, muitas vezes 44100 contra os 48000 do celular, cada bloco de
-     * vinte milissegundos seria convertido sozinho, com o filtro recomecando do zero
-     * em cada emenda. Sao cinquenta emendas por segundo, inaudiveis no silencio e
-     * ouvidas como estalos leves por cima da fala. Igualando a taxa, cada bloco entra
-     * sem conversao nenhuma e a conversao final acontece uma vez so, na saida.
+     * The context rate has to match the phone. If it were the rate of the sound card
+     * in the computer, often 44100 against the 48000 of the phone, every twenty
+     * millisecond block would be converted on its own, with the filter starting over
+     * at each seam. That is fifty seams a second, inaudible in silence and heard as
+     * light clicks over speech. With the rates equal, each block goes in with no
+     * conversion at all and the final conversion happens once, on the way out.
      */
     var wanted = (cfg && cfg.sampleRate) || 48000;
     try {
@@ -144,7 +144,7 @@
     resumeAudio();
   }
 
-  /** Maior amplitude do bloco, amostrada de quatro em quatro para sair barato. */
+  /** Loudest point of the block, sampled every fourth value to stay cheap. */
   function peakOf(view) {
     var peak = 0;
     for (var i = 0; i < view.length; i += 4) {
@@ -169,21 +169,21 @@
     var lead = playTime - now;
 
     if (playTime === 0 || lead < MIN_LEAD_SEC) {
-      /* Comeco, ou a folga acabou. Recomeca com o tempo escolhido no buffer. */
+      /* The start, or the slack ran out. Begin again with the buffer time. */
       playTime = now + targetSec;
       trimming = false;
     } else if (lead > targetSec * 1.6 + 0.05) {
-      /* A folga cresceu, porque os relogios dos dois lados nunca batem. */
+      /* The slack grew, because the clocks on the two sides never agree. */
       trimming = true;
     }
 
     /*
-     * Descartar um bloco no meio da fala estala. Entao esperamos uma pausa: o
-     * primeiro bloco quase mudo e o que sai. Se a folga passar do teto, sai de
-     * qualquer jeito, porque atraso demais e pior.
+     * Dropping a block in the middle of speech clicks. So we wait for a pause: the
+     * first nearly silent block is the one that goes. If the slack passes the
+     * ceiling it goes anyway, because too much delay is worse.
      */
     if (trimming && (peakOf(view) < QUIET_PEAK || lead > targetSec * 3 + 0.4)) {
-      /* Nao agenda e nao avanca o relogio: a folga encolhe sozinha o tanto do bloco. */
+      /* Nothing scheduled and the clock stays put: the slack shrinks by one block. */
       trimming = false;
       return;
     }
@@ -212,7 +212,7 @@
     playTime += duration;
   }
 
-  /** Aumentar a folga custa um silencio unico, do tamanho exato do que falta. */
+  /** Growing the slack costs a single silence, exactly as long as what is missing. */
   function applyBuffer() {
     targetSec = bufferMs / 1000;
     if (!ctx || playTime === 0) return;
@@ -229,7 +229,7 @@
   function refreshAudioGate() {
     if (!ctx) return;
     if (ctx.state !== 'running') {
-      /* Raro depois do clique em Iniciar, mas o caminho de volta fica aberto. */
+      /* Rare after the click on Start, but the way back stays open. */
       el.controls.hidden = true;
       el.enable.hidden = false;
       setStatus(t('clickStart'), false);
@@ -240,7 +240,7 @@
     }
   }
 
-  /* ------------------------------------------------------------ placa de saida */
+  /* ---------------------------------------------------------------- sound card */
 
   function setupOutputPicker() {
     var available = !!(window.isSecureContext &&
@@ -289,7 +289,7 @@
 
   /* ------------------------------------------------------------------ interface */
 
-  /* Sem escuta ativa nada aparece, para ninguem mexer no que nao esta ouvindo. */
+  /* With no listening going on nothing shows, so nobody changes what they cannot hear. */
   function hideEverything() {
     el.controls.hidden = true;
     el.enable.hidden = true;
@@ -329,7 +329,7 @@
 
   el.channels.addEventListener('change', function () {
     markLocalChange();
-    /* Em estereo o aparelho escolhe o microfone sozinho. */
+    /* In stereo the device picks the microphone on its own. */
     el.mic.disabled = el.channels.value !== 'mono';
     send({ type: 'setChannels', mode: el.channels.value });
   });
@@ -338,7 +338,7 @@
     markLocalChange();
     var wanted = Math.round(Number(el.buffer.value));
     if (!isFinite(wanted)) wanted = DEFAULT_BUFFER_MS;
-    /* Fora da faixa util o numero volta para o limite mais proximo. */
+    /* Outside the useful range the number falls back to the nearest limit. */
     if (wanted < MIN_BUFFER_MS) wanted = MIN_BUFFER_MS;
     if (wanted > MAX_BUFFER_MS) wanted = MAX_BUFFER_MS;
     if (String(wanted) !== el.buffer.value) el.buffer.value = String(wanted);
@@ -348,13 +348,13 @@
   });
 
   /*
-   * Sair daqui desliga so este navegador. O celular continua transmitindo, e outro
-   * computador pode assumir a vaga. Para voltar a ouvir basta o botao Iniciar.
+   * Leaving here disconnects this browser alone. The phone keeps streaming, and
+   * another computer may take the slot. The Start button brings the sound back.
    */
   el.disconnect.addEventListener('click', function () {
     shuttingDown = true;
     if (ws) {
-      /* Sem os tratadores, o fechamento deliberado nao vira aviso de queda. */
+      /* Without the handlers, a deliberate close does not turn into a lost warning. */
       ws.onclose = null;
       ws.onerror = null;
       ws.onmessage = null;
@@ -372,7 +372,7 @@
     checkStatus();
   });
 
-  /* ------------------------------------------------------------------ conexao */
+  /* --------------------------------------------------------------- connection */
 
   function applyConfig(cfg) {
     var newStream = !config || config.streamId !== cfg.streamId;
@@ -390,7 +390,7 @@
     }
     el.mic.disabled = el.channels.value !== 'mono';
 
-    /* Taxa nova do celular pede um contexto novo, para as taxas seguirem iguais. */
+    /* A new rate on the phone calls for a new context, to keep the rates equal. */
     if (!ctx || builtForRate !== cfg.sampleRate) {
       buildAudio(cfg);
     } else {
@@ -436,8 +436,8 @@
   }
 
   /*
-   * Nada acontece antes do clique. A pagina so ocupa a vaga de ouvinte, e so pede
-   * audio ao celular, depois que a pessoa manda comecar.
+   * Nothing happens before the click. The page only takes the listener slot, and
+   * only asks the phone for audio, after the person says to begin.
    */
   function start() {
     if (started) return;
@@ -451,8 +451,8 @@
   el.enable.addEventListener('click', start);
 
   /*
-   * Antes de oferecer o botao a pagina pergunta ao celular se a vaga esta livre.
-   * A consulta e um pedido comum, entao nao tira o lugar de quem ja ouve.
+   * Before offering the button the page asks the phone whether the slot is free.
+   * The question is an ordinary request, so it never displaces whoever is listening.
    */
   function checkStatus() {
     if (started) return;
@@ -482,6 +482,6 @@
   el.enable.hidden = true;
   setStatus(t('loading'), false);
   checkStatus();
-  /* A vaga pode abrir ou fechar enquanto a pessoa olha a pagina parada. */
+  /* The slot may open or close while the person looks at an idle page. */
   statusTimer = setInterval(checkStatus, 3000);
 })();

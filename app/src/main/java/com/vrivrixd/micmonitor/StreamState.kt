@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
 /**
- * Estado observavel da transmissao. O servico escreve, a interface le.
+ * Observable state of the stream. The service writes it, the screens read it.
  */
 object StreamState {
 

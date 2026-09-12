@@ -9,25 +9,26 @@ import android.util.Log
 import kotlin.math.pow
 
 /**
- * Captura do microfone em PCM de 16 bits e entrega dos blocos ja com ganho aplicado.
+ * Captures the microphone as 16-bit PCM and hands out blocks with the gain applied.
  *
- * A abertura tenta varias combinacoes de fonte, taxa e numero de canais, porque o
- * suporte a estereo varia muito entre aparelhos.
+ * Opening tries several combinations of source, rate and channel count, because
+ * stereo support varies a lot between devices.
  */
 class AudioEngine(
     private val onPcm: (ByteArray, Int) -> Unit,
     private val onError: (String) -> Unit
 ) {
 
-    /** Ganho em decibeis, alterado a qualquer momento pelo aplicativo ou pela pagina. */
+    /** Gain in decibels, changed at any time by the app or by the page. */
     @Volatile
     var gainDb: Float = 0f
 
     /**
-     * Troca o lado esquerdo com o direito.
+     * Trades the left side for the right one.
      *
-     * Vale na hora, sem reabrir o microfone, porque a troca acontece no mesmo laco
-     * que ja empacota cada bloco. Em mono nao faz nada.
+     * It takes effect at once, without reopening the microphone, because the swap
+     * happens in the same loop that already packs every block. In mono it does
+     * nothing.
      */
     @Volatile
     var swapChannels: Boolean = false
@@ -44,15 +45,15 @@ class AudioEngine(
     var channels = 1
         private set
 
-    /** Identificador da sessao, usado para saber se o sistema nos deu silencio. */
+    /** Session identifier, used to tell whether the system has silenced us. */
     var sessionId = 0
         private set
 
     fun isRunning(): Boolean = running
 
     /**
-     * Abre o microfone e comeca a produzir blocos.
-     * Retorna falso quando nenhuma combinacao funcionou.
+     * Opens the microphone and starts producing blocks.
+     * Returns false when no combination worked.
      */
     @SuppressLint("MissingPermission")
     fun start(sourceKey: String, wantStereo: Boolean): Boolean {
@@ -65,7 +66,7 @@ class AudioEngine(
         record = opened
 
         val frameBytes = channels * 2
-        // Blocos de vinte milissegundos mantem a latencia baixa sem inundar a rede.
+        // Twenty millisecond blocks keep the latency low without flooding the network.
         val chunkFrames = sampleRate / 50
         val shorts = ShortArray(chunkFrames * channels)
         val bytes = ByteArray(shorts.size * 2)
@@ -76,7 +77,7 @@ class AudioEngine(
             try {
                 opened.startRecording()
             } catch (e: IllegalStateException) {
-                Log.e(TAG, "startRecording falhou", e)
+                Log.e(TAG, "startRecording failed", e)
                 running = false
                 onError("mic")
                 return@Thread
@@ -94,7 +95,7 @@ class AudioEngine(
             }
         }, "MicMonitor-Audio").also { it.start() }
 
-        Log.i(TAG, "Captura iniciada em $sampleRate Hz, $channels canal(is), bloco de $frameBytes bytes")
+        Log.i(TAG, "Capture started at $sampleRate Hz, $channels channel(s), $frameBytes byte frames")
         return true
     }
 
@@ -112,12 +113,12 @@ class AudioEngine(
             try {
                 if (it.recordingState == AudioRecord.RECORDSTATE_RECORDING) it.stop()
             } catch (e: Throwable) {
-                Log.w(TAG, "Falha ao parar a captura", e)
+                Log.w(TAG, "Could not stop the capture", e)
             }
             try {
                 it.release()
             } catch (e: Throwable) {
-                Log.w(TAG, "Falha ao liberar a captura", e)
+                Log.w(TAG, "Could not release the capture", e)
             }
         }
         record = null
@@ -127,8 +128,8 @@ class AudioEngine(
     private fun openRecord(sourceKey: String, wantStereo: Boolean): AudioRecord? {
         val attempts = mutableListOf<Pair<Int, Int>>()
         if (wantStereo) {
-            // Em estereo a escolha de microfone e ignorada. A fonte de camera e a
-            // que mais costuma entregar dois canais de verdade.
+            // In stereo the microphone choice is ignored. The camera source is the
+            // one that most often delivers two real channels.
             for (src in STEREO_SOURCES) attempts += src to 2
         }
         attempts += androidSource(sourceKey) to 1
@@ -143,7 +144,7 @@ class AudioEngine(
                 val candidate = try {
                     build(source, rate, mask, bufferSize)
                 } catch (e: Exception) {
-                    Log.w(TAG, "Falha ao abrir fonte $source em $rate Hz", e)
+                    Log.w(TAG, "Could not open source $source at $rate Hz", e)
                     null
                 }
                 if (candidate != null && candidate.state == AudioRecord.STATE_INITIALIZED) {
@@ -159,13 +160,13 @@ class AudioEngine(
     }
 
     /**
-     * Abre a captura sem reservar o microfone para nos.
+     * Opens the capture without reserving the microphone for us.
      *
-     * A fonte de camera, que e a que mais entrega estereo de verdade, vem marcada
-     * como reservada por padrao. Essa marca impede que qualquer outro aplicativo
-     * grave ao mesmo tempo, e era por isso que um audio gravado no mensageiro saia
-     * mudo enquanto a transmissao estava ligada. Sem ela o Android volta a decidir
-     * sozinho, e quem comeca a gravar depois recebe o som.
+     * The camera source, the one that most often delivers real stereo, is marked as
+     * reserved by default. That mark stops any other app from recording at the same
+     * time, and it was why a voice message recorded in a messenger came out silent
+     * while the stream was running. Without it Android decides on its own again, and
+     * whoever starts recording later gets the sound.
      */
     @SuppressLint("MissingPermission")
     private fun build(source: Int, rate: Int, mask: Int, bufferSize: Int): AudioRecord {
@@ -190,10 +191,10 @@ class AudioEngine(
         else -> MediaRecorder.AudioSource.DEFAULT
     }
 
-    /** Aplica o ganho com limite e escreve em little endian. */
+    /** Applies the gain with a ceiling and writes it out in little endian. */
     private fun applyGainAndPack(src: ShortArray, count: Int, dst: ByteArray) {
         val factor = 10.0.pow(gainDb / 20.0).toFloat()
-        // A troca de lados le a amostra do canal vizinho, de dois em dois.
+        // Swapping sides reads the sample from the neighbouring channel, two by two.
         val swap = swapChannels && channels == 2 && count % 2 == 0
         var j = 0
         for (i in 0 until count) {

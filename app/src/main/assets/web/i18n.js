@@ -1,4 +1,4 @@
-/* Textos da pagina. Gerado a partir dos mesmos originais do aplicativo. */
+/* Page texts. Generated from the same sources as the app strings. */
 var MIC_MONITOR_TEXTS = {
  "ar": {
   "alertEnded": "توقف هذا الحاسوب عن الاستماع. ما زال التطبيق يعمل على الهاتف.",

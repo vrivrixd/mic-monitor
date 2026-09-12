@@ -5,14 +5,14 @@ import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.SocketException
 
-/** Descoberta do endereco que o computador deve digitar no navegador. */
+/** Finds the address that has to be typed into the browser on the computer. */
 object NetUtils {
 
     private const val TAG = "NetUtils"
 
     /**
-     * Endereco IPv4 do aparelho na rede local, ou nulo quando nao ha rede util.
-     * Interfaces de Wi-Fi e de roteador portatil tem preferencia.
+     * IPv4 address of the phone on the local network, or null when there is none.
+     * Wi-Fi and hotspot interfaces come first.
      */
     fun localIpv4(): String? {
         val candidates = ArrayList<Pair<Int, String>>()
@@ -36,7 +36,7 @@ object NetUtils {
                 }
             }
         } catch (e: SocketException) {
-            Log.w(TAG, "Falha ao listar interfaces de rede", e)
+            Log.w(TAG, "Could not list the network interfaces", e)
             return null
         }
         return candidates.minByOrNull { it.first }?.second

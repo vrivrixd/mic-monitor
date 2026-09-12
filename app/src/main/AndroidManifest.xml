@@ -52,7 +52,7 @@
             android:exported="false"
             android:foregroundServiceType="microphone" />
 
-        <!-- Entrega a atualizacao baixada ao instalador do sistema. -->
+        <!-- Hands the downloaded update to the system installer. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.updates"

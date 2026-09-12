@@ -23,17 +23,17 @@ import com.google.android.material.snackbar.Snackbar
 import com.vrivrixd.micmonitor.databinding.ActivitySettingsBinding
 
 /**
- * Tela de configuracoes. Cada alteracao vale na hora, inclusive com a transmissao ligada.
+ * Settings screen. Every change takes effect at once, stream running or not.
  *
- * Cada opcao e um unico ponto de parada para o leitor de tela. Os rotulos visiveis
- * ficam fora da arvore de acessibilidade e o nome vai na propria opcao.
+ * Each option is a single stop for the screen reader. The visible labels stay out
+ * of the accessibility tree and the name goes on the control itself.
  */
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: Prefs
 
-    /** Evita que a atualizacao vinda da pagina dispare os ouvintes da tela. */
+    /** Keeps an update coming from the page from firing the listeners here. */
     private var updating = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +56,7 @@ class SettingsActivity : AppCompatActivity() {
 
         loadFromPrefs()
 
-        // A pagina no computador tambem muda estas opcoes.
+        // The page on the computer changes these options too.
         var lastRevision = StreamState.current.configRevision
         StreamState.state.observe(this) { snapshot ->
             if (snapshot.configRevision != lastRevision) {
@@ -71,7 +71,7 @@ class SettingsActivity : AppCompatActivity() {
         refreshBatteryButton()
     }
 
-    // -------------------------------------------------------------------- porta
+    // --------------------------------------------------------------------- port
 
     private fun setupPort() {
         labelField(binding.portInput, R.string.label_port)
@@ -100,7 +100,7 @@ class SettingsActivity : AppCompatActivity() {
         })
     }
 
-    // ------------------------------------------------------- varias conexoes
+    // ---------------------------------------------------- several connections
 
     private fun setupMultiple() {
         binding.multiCheck.setOnCheckedChangeListener { _, checked ->
@@ -110,7 +110,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    // -------------------------------------------------------------------- ganho
+    // --------------------------------------------------------------------- gain
 
     private fun setupGain() {
         binding.gainSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -125,7 +125,7 @@ class SettingsActivity : AppCompatActivity() {
         })
     }
 
-    // --------------------------------------------------------------- microfone
+    // --------------------------------------------------------------- microphone
 
     private fun setupMic() {
         binding.micSpinner.adapter = adapterOf(MicSource.ALL.map { getString(MicSource.labelRes(it)) })
@@ -143,7 +143,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    // ------------------------------------------------------------------ canais
+    // ----------------------------------------------------------------- channels
 
     private fun setupChannels() {
         binding.channelSpinner.adapter =
@@ -155,7 +155,7 @@ class SettingsActivity : AppCompatActivity() {
                 val mode = ChannelMode.ALL[position]
                 if (mode == prefs.channelMode) return
                 prefs.channelMode = mode
-                // Em estereo o aparelho escolhe o microfone sozinho.
+                // In stereo the device picks the microphone on its own.
                 binding.micSpinner.isEnabled = !ChannelMode.wantsStereo(mode)
                 StreamService.applyPreferences(false)
             }
@@ -164,7 +164,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    // ------------------------------------------------------------------ buffer
+    // ------------------------------------------------------------------- buffer
 
     private fun setupBuffer() {
         labelField(binding.bufferInput, R.string.label_buffer)
@@ -189,7 +189,7 @@ class SettingsActivity : AppCompatActivity() {
         })
     }
 
-    // ------------------------------------------------------------------ bateria
+    // ------------------------------------------------------------------ battery
 
     private fun setupBattery() {
         binding.batteryButton.setOnClickListener { requestIgnoreBattery() }
@@ -206,7 +206,7 @@ class SettingsActivity : AppCompatActivity() {
         )
     }
 
-    /** Abre o pedido do sistema. Sem ele o Android pode encerrar a transmissao em segundo plano. */
+    /** Opens the system request. Without it Android may end the stream in the background. */
     private fun requestIgnoreBattery() {
         val direct = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             .setData(Uri.parse("package:" + packageName))
@@ -223,7 +223,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    // ------------------------------------------------------------------ estado
+    // -------------------------------------------------------------------- state
 
     private fun adapterOf(labels: List<String>): ArrayAdapter<String> {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels)
@@ -232,10 +232,10 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     /**
-     * Nomeia um campo de texto para o leitor de tela.
+     * Names a text field for the screen reader.
      *
-     * O leitor deixa de anunciar contentDescription assim que o campo tem texto.
-     * O rotulo entao vai como dica, que continua sendo anunciada.
+     * The reader stops announcing contentDescription as soon as the field holds
+     * text. The label then travels as the hint, which keeps being announced.
      */
     private fun labelField(field: EditText, labelRes: Int) {
         ViewCompat.setAccessibilityDelegate(field, object : AccessibilityDelegateCompat() {
@@ -250,7 +250,7 @@ class SettingsActivity : AppCompatActivity() {
         })
     }
 
-    /** O nome da opcao e o valor escolhido saem em um anuncio so. */
+    /** The name of the option and the chosen value come out in a single announcement. */
     private fun describe(spinner: Spinner, labelRes: Int) {
         val value = spinner.selectedItem as? String ?: return
         spinner.contentDescription = getString(labelRes) + ", " + value

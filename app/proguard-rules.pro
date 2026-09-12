@@ -1,1 +1,1 @@
-# Regras de ofuscacao especificas do projeto.
+# Obfuscation rules specific to this project.

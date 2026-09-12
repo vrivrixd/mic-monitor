@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Idiomas oferecidos na tela de informacoes do aplicativo, no proprio Android.
-  Precisa acompanhar as pastas de recursos em res/values-*.
+  Languages offered on the app info screen of Android itself.
+  It has to follow the resource folders in res/values-*.
 -->
 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
     <locale android:name="en" />

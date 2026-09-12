@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Conteudo da janela de download. A porcentagem fica em texto, e nao so na barra,
-  porque barra de progresso sozinha nao diz nada a quem usa leitor de tela.
+  Contents of the download window. The percentage lives in text, and not only in
+  the bar, because a progress bar on its own says nothing to a screen reader.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

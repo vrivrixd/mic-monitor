@@ -3,40 +3,40 @@ package com.vrivrixd.micmonitor
 import android.content.Context
 import android.content.SharedPreferences
 
-/** Leitura e gravacao das preferencias do aplicativo. */
+/** Reads and writes the app preferences. */
 class Prefs(context: Context) {
 
     private val sp: SharedPreferences =
         context.applicationContext.getSharedPreferences("mic_monitor", Context.MODE_PRIVATE)
 
-    /** Texto cru digitado pelo usuario. Vazio significa usar a porta padrao. */
+    /** Raw text typed by the user. Empty means use the default port. */
     var portText: String
         get() = sp.getString(KEY_PORT, "") ?: ""
         set(value) = sp.edit().putString(KEY_PORT, value.trim()).apply()
 
-    /** Porta efetiva, ja resolvida para a padrao quando o campo esta vazio. */
+    /** The port in use, already resolved to the default when the field is empty. */
     val port: Int
         get() = portText.toIntOrNull()?.takeIf { it in MIN_PORT..MAX_PORT } ?: DEFAULT_PORT
 
-    /** Posicao do controle deslizante, de zero a cem. O meio nao mexe no volume. */
+    /** Slider position, from zero to one hundred. The middle leaves the volume alone. */
     var gainPercent: Int
         get() = sp.getInt(KEY_GAIN, DEFAULT_GAIN_PERCENT).coerceIn(0, 100)
         set(value) = sp.edit().putInt(KEY_GAIN, value.coerceIn(0, 100)).apply()
 
-    /** O mesmo ganho convertido para decibeis, que e o que a captura usa. */
+    /** The same gain in decibels, which is what the capture works with. */
     val gainDb: Float
         get() = percentToDb(gainPercent)
 
-    /** Uma das constantes de [MicSource]. */
+    /** One of the [MicSource] constants. */
     var micSource: String
         get() = sp.getString(KEY_SOURCE, MicSource.DEFAULT) ?: MicSource.DEFAULT
         set(value) = sp.edit().putString(KEY_SOURCE, value).apply()
 
     /**
-     * Uma das constantes de [ChannelMode].
+     * One of the [ChannelMode] constants.
      *
-     * A versao anterior guardava so uma marca de estereo ligado ou desligado. Quem
-     * atualiza cai no modo equivalente ao que tinha escolhido antes.
+     * The previous version stored only a stereo flag, on or off. Anyone updating
+     * lands on the mode matching what they had chosen before.
      */
     var channelMode: String
         get() {
@@ -49,16 +49,16 @@ class Prefs(context: Context) {
             sp.edit().putString(KEY_CHANNELS, safe).apply()
         }
 
-    /** Verdadeiro quando mais de um computador pode ouvir ao mesmo tempo. */
+    /** True when more than one computer may listen at the same time. */
     var allowMultiple: Boolean
         get() = sp.getBoolean(KEY_MULTIPLE, false)
         set(value) = sp.edit().putBoolean(KEY_MULTIPLE, value).apply()
 
     /**
-     * Quanto som o computador guarda antes de tocar, em milissegundos.
+     * How much sound the computer holds before playing it, in milliseconds.
      *
-     * O valor e livre dentro da faixa util. Quem manda nesse tempo e o navegador,
-     * porque o celular envia blocos de vinte milissegundos de qualquer maneira.
+     * The value is free inside the useful range. What this time really controls is
+     * the browser, because the phone sends twenty millisecond blocks either way.
      */
     var bufferMs: Int
         get() = sp.getInt(KEY_BUFFER, DEFAULT_BUFFER_MS).coerceIn(MIN_BUFFER_MS, MAX_BUFFER_MS)
@@ -74,7 +74,7 @@ class Prefs(context: Context) {
         const val MIN_BUFFER_MS = 30
         const val MAX_BUFFER_MS = 1000
 
-        /** Faixa util de ganho, em decibeis para cada lado do meio. */
+        /** Useful gain range, in decibels on each side of the middle. */
         private const val GAIN_RANGE_DB = 20f
 
         fun percentToDb(percent: Int): Float =
@@ -90,7 +90,7 @@ class Prefs(context: Context) {
     }
 }
 
-/** Identificadores das fontes de audio oferecidas na interface. */
+/** Identifiers of the audio sources offered in the interface. */
 object MicSource {
     const val DEFAULT = "default"
     const val FRONT = "front"
@@ -106,12 +106,12 @@ object MicSource {
 }
 
 /**
- * Como os canais saem na transmissao.
+ * How the channels leave in the stream.
  *
- * O modo invertido troca o lado esquerdo com o direito, para quem quiser o som do
- * microfone de baixo em um lado e o do topo no outro, ao contrario do que o
- * aparelho entrega. Sem estereo de verdade no aparelho os dois modos de estereo
- * caem em um canal so, e inverter deixa de ter efeito.
+ * The swapped mode trades the left side for the right one, for anyone who wants the
+ * bottom microphone on one side and the top one on the other, the opposite of what
+ * the device delivers. Without real stereo on the device both stereo modes fall back
+ * to a single channel, and swapping stops having any effect.
  */
 object ChannelMode {
     const val MONO = "mono"

@@ -20,18 +20,18 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.vrivrixd.micmonitor.databinding.ActivityMainBinding
 
-/** Tela principal: liga e desliga a transmissao e mostra o endereco de escuta. */
+/** Main screen: turns the stream on and off and shows the listening address. */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    /** O botao iniciar e parar fica na barra, ao lado do menu de mais opcoes. */
+    /** The start and stop button sits in the bar, next to the overflow menu. */
     private var toggleItem: MenuItem? = null
 
-    /** Parar e iniciar esconde e mostra textos, o que faria o leitor de tela perder o lugar. */
+    /** Stopping and starting hides and shows text, which would lose the reader's place. */
     private var restoreToggleFocus = false
 
-    /** Procura, baixa e entrega a versao nova ao instalador do Android. */
+    /** Finds, downloads and hands the new version to the Android installer. */
     private lateinit var updates: UpdateManager
 
     private val permissionLauncher = registerForActivityResult(
@@ -54,8 +54,8 @@ class MainActivity : AppCompatActivity() {
 
         StreamState.state.observe(this) { render(it) }
 
-        // Precisa nascer aqui, porque o retorno da tela de permissao so pode ser
-        // registrado antes da tela aparecer.
+        // It has to be born here, because the return from the permission screen can
+        // only be registered before the screen shows up.
         updates = UpdateManager(this)
         updates.checkOnStart()
     }
@@ -146,8 +146,8 @@ class MainActivity : AppCompatActivity() {
                 binding.addressText.setText(R.string.address_unavailable)
                 binding.addressIntro.visibility = View.GONE
             }
-            // A contagem so aparece com mais de um ouvinte, entao nenhuma lingua
-            // precisa concordar numero com o texto.
+            // The count only shows up past one listener, so no language has to make
+            // a number agree with the sentence around it.
             binding.clientText.text = when {
                 snapshot.clientCount <= 0 -> getString(R.string.client_none)
                 snapshot.clientCount == 1 -> getString(R.string.client_connected)
@@ -173,13 +173,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Devolve o foco do leitor de tela ao botao que a pessoa acabou de acionar. */
+    /** Gives the reader's focus back to the button the person has just used. */
     private fun focusToggle() {
         val view = binding.toolbar.findViewById<View>(R.id.menu_toggle) ?: return
         view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null)
     }
 
-    /** Versao, autor e o caminho para o codigo, que abre no navegador. */
+    /** Version, author and the way to the source, which opens in the browser. */
     private fun showAbout() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.about_title)
@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SOURCE_URL)))
         } catch (e: ActivityNotFoundException) {
-            Log.w("MainActivity", "Nenhum navegador para abrir o codigo fonte", e)
+            Log.w("MainActivity", "No browser to open the source code", e)
         }
     }
 

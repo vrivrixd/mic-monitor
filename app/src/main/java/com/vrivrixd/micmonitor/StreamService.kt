@@ -22,7 +22,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 /**
- * Servico em primeiro plano que mantem a captura do microfone e o servidor da pagina.
+ * Foreground service that keeps the microphone capture and the page server alive.
  */
 class StreamService : Service(), MicServer.Listener {
 
@@ -36,10 +36,10 @@ class StreamService : Service(), MicServer.Listener {
     private var address: String? = null
     private var streamId = 0
 
-    /** Verdadeiro quando outro aplicativo esta gravando e o sistema nos deu silencio. */
+    /** True when another app is recording and the system has silenced us. */
     private var micSilenced = false
 
-    /** Tudo que mexe no servico passa por aqui, para nao concorrer entre threads. */
+    /** Everything that touches the service goes through here, to avoid races. */
     private val main = Handler(Looper.getMainLooper())
 
     override fun onCreate() {
@@ -67,7 +67,7 @@ class StreamService : Service(), MicServer.Listener {
         super.onDestroy()
     }
 
-    // ------------------------------------------------------------------ inicio
+    // -------------------------------------------------------------------- start
 
     private fun startStreaming() {
         if (server != null) return
@@ -80,7 +80,7 @@ class StreamService : Service(), MicServer.Listener {
         try {
             newServer.start()
         } catch (e: IOException) {
-            Log.e(TAG, "Nao foi possivel abrir a porta " + port, e)
+            Log.e(TAG, "Could not open port " + port, e)
             StreamState.reset(getString(R.string.error_port_busy, port))
             stopSelf()
             return
@@ -110,7 +110,7 @@ class StreamService : Service(), MicServer.Listener {
         }
     }
 
-    /** Abre a captura com as preferencias atuais. */
+    /** Opens the capture with the current preferences. */
     private fun startEngine(): Boolean {
         engine?.stop()
         streamId++
@@ -128,17 +128,17 @@ class StreamService : Service(), MicServer.Listener {
         return true
     }
 
-    // ------------------------------------------------- disputa pelo microfone
+    // ------------------------------------------------ fight over the microphone
 
     /*
-     * O Android decide sozinho quem fica com o microfone quando dois aplicativos
-     * gravam ao mesmo tempo, e quem perde recebe silencio. A captura de camera e
-     * marcada como reservada por padrao, o que impedia o outro aplicativo de gravar.
-     * A marca e desligada em AudioEngine, entao agora o recem chegado ganha.
+     * Android decides on its own who keeps the microphone when two apps record at
+     * the same time, and whoever loses gets silence. The camera capture is marked as
+     * reserved by default, which stopped the other app from recording at all. That
+     * mark is turned off in AudioEngine, so now the newcomer wins.
      *
-     * Aqui so acompanhamos o resultado, para dizer na tela e na pagina que a
-     * transmissao esta muda porque outro aplicativo esta gravando. Nada disso
-     * envolve reproducao de midia.
+     * Here we only follow the outcome, to say on the screen and on the page that the
+     * stream is silent because another app is recording. None of this involves media
+     * playback.
      */
     @RequiresApi(Build.VERSION_CODES.Q)
     private inner class SilenceWatcher : AudioManager.AudioRecordingCallback() {
@@ -172,7 +172,7 @@ class StreamService : Service(), MicServer.Listener {
         StreamState.update { it.copy(paused = silenced) }
         server?.sendConfig()
         updateNotification()
-        Log.i(TAG, if (silenced) "Microfone cedido a outro aplicativo" else "Microfone de volta")
+        Log.i(TAG, if (silenced) "Microphone handed to another app" else "Microphone back")
     }
 
 
@@ -200,29 +200,29 @@ class StreamService : Service(), MicServer.Listener {
         try {
             unwatchRecording()
         } catch (e: Throwable) {
-            Log.w(TAG, "Falha ao parar o acompanhamento de gravacao", e)
+            Log.w(TAG, "Could not stop watching the recordings", e)
         }
         try {
             engine?.stop()
         } catch (e: Throwable) {
-            Log.w(TAG, "Falha ao encerrar a captura", e)
+            Log.w(TAG, "Could not end the capture", e)
         }
         engine = null
         try {
             server?.stop()
         } catch (e: Throwable) {
-            Log.w(TAG, "Falha ao encerrar o servidor", e)
+            Log.w(TAG, "Could not end the server", e)
         }
         server = null
         try {
             wakeLock?.takeIf { it.isHeld }?.release()
         } catch (e: Throwable) {
-            Log.w(TAG, "Falha ao soltar o bloqueio de energia", e)
+            Log.w(TAG, "Could not release the wake lock", e)
         }
         try {
             wifiLock?.takeIf { it.isHeld }?.release()
         } catch (e: Throwable) {
-            Log.w(TAG, "Falha ao soltar o bloqueio de Wi-Fi", e)
+            Log.w(TAG, "Could not release the Wi-Fi lock", e)
         }
         wakeLock = null
         wifiLock = null
@@ -241,13 +241,14 @@ class StreamService : Service(), MicServer.Listener {
         stopSelf()
     }
 
-    // -------------------------------------------------- mudancas de preferencia
+    // ------------------------------------------------------ preference changes
 
     /**
-     * Reaplica as preferencias enquanto a transmissao roda.
+     * Applies the preferences again while the stream runs.
      *
-     * Ganho, troca de lados e permissao de varias conexoes valem na hora. Trocar o
-     * numero de canais, o microfone ou a porta refaz o que for preciso.
+     * Gain, side swapping and the permission for several connections take effect at
+     * once. Changing the channel count, the microphone or the port redoes whatever
+     * is needed.
      */
     fun reconfigure() {
         val current = server ?: return
@@ -256,7 +257,8 @@ class StreamService : Service(), MicServer.Listener {
         current.allowMultiple = prefs.allowMultiple
 
         if (current.port != prefs.port) {
-            // A porta mudou, entao o endereco muda e os ouvintes precisam reconectar.
+            // The port changed, so the address changes and the listeners have to
+            // connect again.
             releaseEverything()
             startStreaming()
             return
@@ -286,7 +288,7 @@ class StreamService : Service(), MicServer.Listener {
         sourceChanged = true
     }
 
-    // ----------------------------------------------------- comandos da pagina
+    // ------------------------------------------------- commands from the page
 
     override fun onCommand(command: JSONObject) {
         main.post { handleCommand(command) }
@@ -346,7 +348,7 @@ class StreamService : Service(), MicServer.Listener {
             .put("paused", micSilenced)
     }
 
-    // ------------------------------------------------------------- notificacao
+    // ------------------------------------------------------------- notification
 
     private fun buildNotification(): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -372,7 +374,8 @@ class StreamService : Service(), MicServer.Listener {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notif_title))
-            // So o estado. O endereco fica na tela do aplicativo, nao na notificacao.
+            // The state and nothing else. The address belongs on the app screen, not
+            // in the notification.
             .setContentText(
                 if (micSilenced) getString(R.string.notif_paused)
                 else getString(R.string.notif_text)
@@ -417,7 +420,7 @@ class StreamService : Service(), MicServer.Listener {
             )
         }
 
-        /** Reaplica as preferencias se o servico estiver ativo. */
+        /** Applies the preferences again if the service is alive. */
         fun applyPreferences(sourceChanged: Boolean) {
             val service = instance ?: return
             if (sourceChanged) service.markSourceChanged()

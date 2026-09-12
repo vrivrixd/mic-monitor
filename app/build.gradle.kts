@@ -11,15 +11,15 @@ android {
         applicationId = "com.vrivrixd.micmonitor"
         minSdk = 24
         targetSdk = 35
-        // O numero interno precisa subir a cada envio, senao o Android recusa a
-        // atualizacao. O nome visivel e o que aparece na tela sobre.
+        // The internal number has to grow on every release, otherwise Android
+        // refuses the update. The visible name is what the about screen shows.
         versionCode = 11
         versionName = "1.1"
     }
 
-    // A chave de assinatura nao fica no repositorio. Ela e colocada em
-    // app/micmonitor.p12 na hora de compilar, e as senhas vem do ambiente.
-    // Sem o arquivo, a compilacao acontece do mesmo jeito, so que sem assinatura.
+    // The signing key is not kept in the repository. It is placed at
+    // app/micmonitor.p12 at build time, and the passwords come from the
+    // environment. Without the file the build still runs, only unsigned.
     val keystore = file("micmonitor.p12")
     val signed = keystore.exists()
 
@@ -62,13 +62,14 @@ android {
         viewBinding = true
     }
 
-    // O arquivo gerado sai com nome e versao, em vez do app-release.apk do Gradle.
+    // The built file carries the name and the version, instead of the
+    // app-release.apk that Gradle would produce.
     applicationVariants.all {
-        val marca = if (buildType.name == "release") "" else "-" + buildType.name
-        val nome = "MicMonitor-" + versionName + marca + ".apk"
+        val mark = if (buildType.name == "release") "" else "-" + buildType.name
+        val fileName = "MicMonitor-" + versionName + mark + ".apk"
         outputs.all {
             (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl)
-                .outputFileName = nome
+                .outputFileName = fileName
         }
     }
 }
