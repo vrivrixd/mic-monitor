@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">應用程式需要麥克風權限才能運作。</string>
     <string name="error_port_busy">無法開啟連線埠 %1$d。它可能已被占用。請在設定裡另選一個。</string>
     <string name="error_mic_busy">無法存取麥克風。可能有其他應用程式正在使用它。</string>
+    <string name="dialog_yes">是</string>
+    <string name="dialog_no">否</string>
+    <string name="dialog_cancel">取消</string>
+    <string name="update_title">有可用更新！</string>
+    <string name="update_body">Mic Monitor 有新版本可用！\n您的版本：%1$s；\n最新版本：%2$s。\n要現在更新嗎？</string>
+    <string name="update_download_title">正在下載更新</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">無法下載更新。</string>
+    <string name="update_permission_title">需要授權</string>
+    <string name="update_permission_body">Android 需要您授權，Mic Monitor 才能安裝應用程式。\n請在開啟的畫面中開啟該權限，然後返回繼續。</string>
+    <string name="update_permission_action">開啟設定</string>
 </resources>

@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">Aplikace potřebuje ke svému běhu oprávnění k mikrofonu.</string>
     <string name="error_port_busy">Port %1$d se nepodařilo otevřít. Možná se používá. Zvolte v nastavení jiný.</string>
     <string name="error_mic_busy">K mikrofonu se nepodařilo získat přístup. Možná jej používá jiná aplikace.</string>
+    <string name="dialog_yes">Ano</string>
+    <string name="dialog_no">Ne</string>
+    <string name="dialog_cancel">Zrušit</string>
+    <string name="update_title">K dispozici je aktualizace!</string>
+    <string name="update_body">Je k dispozici nová verze Mic Monitoru!\nVaše verze: %1$s;\nNejnovější verze: %2$s.\nChcete aktualizovat nyní?</string>
+    <string name="update_download_title">Stahování aktualizace</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">Aktualizaci se nepodařilo stáhnout.</string>
+    <string name="update_permission_title">Je potřeba oprávnění</string>
+    <string name="update_permission_body">Android potřebuje vaše svolení, aby Mic Monitor mohl instalovat aplikace.\nNa obrazovce, která se otevře, oprávnění zapněte a vraťte se zpět.</string>
+    <string name="update_permission_action">Otevřít nastavení</string>
 </resources>

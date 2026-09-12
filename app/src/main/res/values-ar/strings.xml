@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">يحتاج التطبيق إلى إذن الميكروفون ليعمل.</string>
     <string name="error_port_busy">تعذّر فتح المنفذ %1$d. قد يكون مستخدمًا. اختر منفذًا آخر من الإعدادات.</string>
     <string name="error_mic_busy">تعذّر الوصول إلى الميكروفون. قد يستخدمه تطبيق آخر.</string>
+    <string name="dialog_yes">نعم</string>
+    <string name="dialog_no">لا</string>
+    <string name="dialog_cancel">إلغاء</string>
+    <string name="update_title">يتوفر تحديث!</string>
+    <string name="update_body">تتوفر نسخة جديدة من Mic Monitor!\nنسختك: %1$s؛\nأحدث نسخة: %2$s.\nهل تريد التحديث الآن؟</string>
+    <string name="update_download_title">جارٍ تنزيل التحديث</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">تعذر تنزيل التحديث.</string>
+    <string name="update_permission_title">إذن مطلوب</string>
+    <string name="update_permission_body">يحتاج أندرويد إلى إذنك حتى يتمكن Mic Monitor من تثبيت التطبيقات.\nفعّل الإذن في الشاشة التي تفتح ثم عد لمتابعة العملية.</string>
+    <string name="update_permission_action">فتح الإعدادات</string>
 </resources>

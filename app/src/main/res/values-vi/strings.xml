@@ -62,4 +62,15 @@
   <string name="perm_mic_needed">Ứng dụng cần quyền micrô để hoạt động.</string>
   <string name="error_port_busy">Không mở được cổng %1$d. Cổng này có thể đang được dùng. Hãy chọn cổng khác trong cài đặt.</string>
   <string name="error_mic_busy">Không truy cập được micrô. Có thể một ứng dụng khác đang dùng.</string>
+  <string name="dialog_yes">Có</string>
+  <string name="dialog_no">Không</string>
+  <string name="dialog_cancel">Hủy</string>
+  <string name="update_title">Đã có bản cập nhật!</string>
+  <string name="update_body">Đã có phiên bản mới của Mic Monitor!\nPhiên bản của bạn: %1$s;\nPhiên bản mới nhất: %2$s.\nBạn có muốn cập nhật ngay không?</string>
+  <string name="update_download_title">Đang tải bản cập nhật</string>
+  <string name="update_percent">%1$d%%</string>
+  <string name="update_failed">Không tải được bản cập nhật.</string>
+  <string name="update_permission_title">Cần cấp quyền</string>
+  <string name="update_permission_body">Android cần bạn cấp quyền để Mic Monitor cài đặt ứng dụng.\nỞ màn hình vừa mở, hãy bật quyền đó rồi quay lại để tiếp tục.</string>
+  <string name="update_permission_action">Mở cài đặt</string>
 </resources>

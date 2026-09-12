@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">Для работы приложению нужно разрешение на доступ к микрофону.</string>
     <string name="error_port_busy">Не удалось открыть порт %1$d. Возможно, он занят. Выберите другой в настройках.</string>
     <string name="error_mic_busy">Не удалось получить доступ к микрофону. Возможно, его использует другое приложение.</string>
+    <string name="dialog_yes">Да</string>
+    <string name="dialog_no">Нет</string>
+    <string name="dialog_cancel">Отмена</string>
+    <string name="update_title">Доступно обновление!</string>
+    <string name="update_body">Доступна новая версия Mic Monitor!\nВаша версия: %1$s;\nПоследняя версия: %2$s.\nОбновить сейчас?</string>
+    <string name="update_download_title">Загрузка обновления</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">Не удалось загрузить обновление.</string>
+    <string name="update_permission_title">Требуется разрешение</string>
+    <string name="update_permission_body">Android нужно ваше разрешение, чтобы Mic Monitor мог устанавливать приложения.\nНа открывшемся экране включите разрешение и вернитесь, чтобы продолжить.</string>
+    <string name="update_permission_action">Открыть настройки</string>
 </resources>

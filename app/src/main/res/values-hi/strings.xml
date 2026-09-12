@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">काम करने के लिए ऐप को माइक्रोफ़ोन की अनुमति चाहिए।</string>
     <string name="error_port_busy">पोर्ट %1$d नहीं खुल सका। वह इस्तेमाल में हो सकता है। सेटिंग में दूसरा चुनें।</string>
     <string name="error_mic_busy">माइक्रोफ़ोन तक पहुँच नहीं हो सकी। कोई दूसरा ऐप उसे इस्तेमाल कर रहा हो सकता है।</string>
+    <string name="dialog_yes">हाँ</string>
+    <string name="dialog_no">नहीं</string>
+    <string name="dialog_cancel">रद्द करें</string>
+    <string name="update_title">अपडेट उपलब्ध है!</string>
+    <string name="update_body">Mic Monitor का नया संस्करण उपलब्ध है!\nआपका संस्करण: %1$s;\nनवीनतम संस्करण: %2$s.\nक्या आप अभी अपडेट करना चाहेंगे?</string>
+    <string name="update_download_title">अपडेट डाउनलोड हो रहा है</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">अपडेट डाउनलोड नहीं किया जा सका।</string>
+    <string name="update_permission_title">अनुमति आवश्यक है</string>
+    <string name="update_permission_body">Mic Monitor को ऐप इंस्टॉल करने के लिए Android को आपकी अनुमति चाहिए।\nखुलने वाली स्क्रीन पर अनुमति चालू करें और जारी रखने के लिए वापस आएँ।</string>
+    <string name="update_permission_action">सेटिंग्स खोलें</string>
 </resources>

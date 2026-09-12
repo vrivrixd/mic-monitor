@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">La aplicación necesita permiso de micrófono para funcionar.</string>
     <string name="error_port_busy">No se pudo abrir el puerto %1$d. Puede estar en uso. Elige otro en los ajustes.</string>
     <string name="error_mic_busy">No se pudo acceder al micrófono. Otra aplicación puede estar usándolo.</string>
+    <string name="dialog_yes">Sí</string>
+    <string name="dialog_no">No</string>
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="update_title">¡Actualización disponible!</string>
+    <string name="update_body">¡Hay una nueva versión de Mic Monitor disponible!\nSu versión: %1$s;\nVersión más reciente: %2$s.\n¿Desea actualizar ahora?</string>
+    <string name="update_download_title">Descargando la actualización</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">No se pudo descargar la actualización.</string>
+    <string name="update_permission_title">Permiso necesario</string>
+    <string name="update_permission_body">Android necesita su permiso para que Mic Monitor instale aplicaciones.\nEn la pantalla que se abra, active el permiso y vuelva para continuar.</string>
+    <string name="update_permission_action">Abrir ajustes</string>
 </resources>

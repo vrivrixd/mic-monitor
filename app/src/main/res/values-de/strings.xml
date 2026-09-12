@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">Die App benötigt die Mikrofonberechtigung, um zu funktionieren.</string>
     <string name="error_port_busy">Port %1$d konnte nicht geöffnet werden. Er ist möglicherweise belegt. Wählen Sie in den Einstellungen einen anderen.</string>
     <string name="error_mic_busy">Kein Zugriff auf das Mikrofon. Möglicherweise verwendet es eine andere App.</string>
+    <string name="dialog_yes">Ja</string>
+    <string name="dialog_no">Nein</string>
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="update_title">Update verfügbar!</string>
+    <string name="update_body">Eine neue Version von Mic Monitor ist verfügbar!\nIhre Version: %1$s;\nNeueste Version: %2$s.\nMöchten Sie jetzt aktualisieren?</string>
+    <string name="update_download_title">Update wird heruntergeladen</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">Das Update konnte nicht heruntergeladen werden.</string>
+    <string name="update_permission_title">Berechtigung erforderlich</string>
+    <string name="update_permission_body">Android benötigt Ihre Erlaubnis, damit Mic Monitor Apps installieren darf.\nAktivieren Sie die Berechtigung im Bildschirm, der sich öffnet, und kehren Sie zurück.</string>
+    <string name="update_permission_action">Einstellungen öffnen</string>
 </resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Unica pasta que o aplicativo compartilha com o instalador do sistema: a das
+  atualizacoes baixadas. Nada mais do aparelho fica ao alcance dele.
+-->
+<paths>
+    <cache-path
+        name="atualizacoes"
+        path="atualizacoes/" />
+</paths>

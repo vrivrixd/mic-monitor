@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">このアプリの動作にはマイクの権限が必要です。</string>
     <string name="error_port_busy">ポート %1$d を開けませんでした。使用中の可能性があります。設定で別のポートを選んでください。</string>
     <string name="error_mic_busy">マイクにアクセスできませんでした。別のアプリが使用している可能性があります。</string>
+    <string name="dialog_yes">はい</string>
+    <string name="dialog_no">いいえ</string>
+    <string name="dialog_cancel">キャンセル</string>
+    <string name="update_title">アップデートがあります！</string>
+    <string name="update_body">Mic Monitor の新しいバージョンがあります。\nお使いのバージョン: %1$s、\n最新のバージョン: %2$s。\n今すぐ更新しますか？</string>
+    <string name="update_download_title">アップデートをダウンロード中</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">アップデートをダウンロードできませんでした。</string>
+    <string name="update_permission_title">許可が必要です</string>
+    <string name="update_permission_body">Mic Monitor がアプリをインストールするには、Android の許可が必要です。\n開いた画面で許可を有効にし、戻って続けてください。</string>
+    <string name="update_permission_action">設定を開く</string>
 </resources>

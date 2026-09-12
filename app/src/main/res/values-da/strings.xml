@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">Appen har brug for tilladelse til mikrofonen for at virke.</string>
     <string name="error_port_busy">Porten %1$d kunne ikke åbnes. Den er muligvis i brug. Vælg en anden i indstillingerne.</string>
     <string name="error_mic_busy">Der var ikke adgang til mikrofonen. En anden app bruger den muligvis.</string>
+    <string name="dialog_yes">Ja</string>
+    <string name="dialog_no">Nej</string>
+    <string name="dialog_cancel">Annullér</string>
+    <string name="update_title">Opdatering tilgængelig!</string>
+    <string name="update_body">Der findes en ny version af Mic Monitor!\nDin version: %1$s;\nNyeste version: %2$s.\nVil du opdatere nu?</string>
+    <string name="update_download_title">Henter opdatering</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">Opdateringen kunne ikke hentes.</string>
+    <string name="update_permission_title">Tilladelse påkrævet</string>
+    <string name="update_permission_body">Android skal have din tilladelse, før Mic Monitor må installere apps.\nSlå tilladelsen til på skærmen, der åbner, og vend tilbage for at fortsætte.</string>
+    <string name="update_permission_action">Åbn indstillinger</string>
 </resources>

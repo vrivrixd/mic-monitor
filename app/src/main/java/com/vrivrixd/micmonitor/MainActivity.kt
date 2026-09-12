@@ -31,6 +31,9 @@ class MainActivity : AppCompatActivity() {
     /** Parar e iniciar esconde e mostra textos, o que faria o leitor de tela perder o lugar. */
     private var restoreToggleFocus = false
 
+    /** Procura, baixa e entrega a versao nova ao instalador do Android. */
+    private lateinit var updates: UpdateManager
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grants ->
@@ -50,6 +53,16 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.setAccessibilityHeading(binding.statusText, true)
 
         StreamState.state.observe(this) { render(it) }
+
+        // Precisa nascer aqui, porque o retorno da tela de permissao so pode ser
+        // registrado antes da tela aparecer.
+        updates = UpdateManager(this)
+        updates.checkOnStart()
+    }
+
+    override fun onDestroy() {
+        updates.release()
+        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

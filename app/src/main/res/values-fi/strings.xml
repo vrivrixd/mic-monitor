@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">Sovellus tarvitsee mikrofonin käyttöoikeuden toimiakseen.</string>
     <string name="error_port_busy">Porttia %1$d ei voitu avata. Se voi olla käytössä. Valitse toinen asetuksista.</string>
     <string name="error_mic_busy">Mikrofonia ei voitu käyttää. Toinen sovellus saattaa käyttää sitä.</string>
+    <string name="dialog_yes">Kyllä</string>
+    <string name="dialog_no">Ei</string>
+    <string name="dialog_cancel">Peruuta</string>
+    <string name="update_title">Päivitys saatavilla!</string>
+    <string name="update_body">Mic Monitorista on saatavilla uusi versio!\nSinun versiosi: %1$s;\nUusin versio: %2$s.\nHaluatko päivittää nyt?</string>
+    <string name="update_download_title">Ladataan päivitystä</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">Päivitystä ei voitu ladata.</string>
+    <string name="update_permission_title">Lupa tarvitaan</string>
+    <string name="update_permission_body">Android tarvitsee luvan, jotta Mic Monitor voi asentaa sovelluksia.\nOta lupa käyttöön avautuvassa näkymässä ja palaa jatkamaan.</string>
+    <string name="update_permission_action">Avaa asetukset</string>
 </resources>

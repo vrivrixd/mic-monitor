@@ -62,4 +62,15 @@
     <string name="perm_mic_needed">Uygulamanın çalışması için mikrofon izni gerekir.</string>
     <string name="error_port_busy">%1$d bağlantı noktası açılamadı. Kullanımda olabilir. Ayarlardan başka birini seçin.</string>
     <string name="error_mic_busy">Mikrofona erişilemedi. Başka bir uygulama kullanıyor olabilir.</string>
+    <string name="dialog_yes">Evet</string>
+    <string name="dialog_no">Hayır</string>
+    <string name="dialog_cancel">İptal</string>
+    <string name="update_title">Güncelleme var!</string>
+    <string name="update_body">Mic Monitor\'ün yeni bir sürümü var!\nSürümünüz: %1$s;\nEn son sürüm: %2$s.\nŞimdi güncellemek ister misiniz?</string>
+    <string name="update_download_title">Güncelleme indiriliyor</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_failed">Güncelleme indirilemedi.</string>
+    <string name="update_permission_title">İzin gerekli</string>
+    <string name="update_permission_body">Mic Monitor\'ün uygulama kurabilmesi için Android\'in izninize ihtiyacı var.\nAçılan ekranda izni etkinleştirin ve devam etmek için geri dönün.</string>
+    <string name="update_permission_action">Ayarları aç</string>
 </resources>
