@@ -128,7 +128,7 @@ Switching between it and the released builds requires uninstalling first.
 ## Credits
 
 The Vietnamese translation was reviewed by
-[nguyenninhhoang](https://github.com/nguyenninhhoang), who also translated VBRecorder.
+[ninhhoang205](https://github.com/ninhhoang205), who also translated VBRecorder.
 
 ## Layout
 
