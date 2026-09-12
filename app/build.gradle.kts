@@ -12,7 +12,7 @@ android {
         minSdk = 24
         targetSdk = 35
         // O numero interno precisa subir a cada envio, senao o Android recusa a
-        // atualizacao. O nome visivel continua em 1.0 ate o projeto ficar pronto.
+        // atualizacao. O nome visivel e o que aparece na tela sobre.
         versionCode = 11
         versionName = "1.1"
     }
@@ -60,6 +60,16 @@ android {
 
     buildFeatures {
         viewBinding = true
+    }
+
+    // O arquivo gerado sai com nome e versao, em vez do app-release.apk do Gradle.
+    applicationVariants.all {
+        val marca = if (buildType.name == "release") "" else "-" + buildType.name
+        val nome = "MicMonitor-" + versionName + marca + ".apk"
+        outputs.all {
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl)
+                .outputFileName = nome
+        }
     }
 }
 

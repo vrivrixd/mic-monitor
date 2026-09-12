@@ -79,7 +79,7 @@ gradle assembleRelease
 The file lands in:
 
 ```
-app/build/outputs/apk/release/app-release.apk
+app/build/outputs/apk/release/MicMonitor-1.1.apk
 ```
 
 For a debug build, with more talkative logging:
@@ -93,7 +93,7 @@ gradle assembleDebug
 With the device plugged in and USB debugging enabled:
 
 ```
-adb install -r app/build/outputs/apk/release/app-release.apk
+adb install -r app/build/outputs/apk/release/MicMonitor-1.1.apk
 ```
 
 Without a cable, copy the APK to the phone and open the file there. Android will ask for
