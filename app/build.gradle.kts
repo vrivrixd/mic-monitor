@@ -13,7 +13,7 @@ android {
         targetSdk = 35
         // The internal number has to grow on every release, otherwise Android
         // refuses the update. The visible name is what the about screen shows.
-        versionCode = 11
+        versionCode = 12
         versionName = "1.1"
     }
 
