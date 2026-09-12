@@ -133,17 +133,18 @@ class MainActivity : AppCompatActivity() {
                 binding.addressText.setText(R.string.address_unavailable)
                 binding.addressIntro.visibility = View.GONE
             }
-            binding.clientText.setText(
-                if (snapshot.clientConnected) R.string.client_connected else R.string.client_none
-            )
+            // A contagem so aparece com mais de um ouvinte, entao nenhuma lingua
+            // precisa concordar numero com o texto.
+            binding.clientText.text = when {
+                snapshot.clientCount <= 0 -> getString(R.string.client_none)
+                snapshot.clientCount == 1 -> getString(R.string.client_connected)
+                else -> getString(R.string.client_count, snapshot.clientCount)
+            }
         }
 
         val warning = when {
             snapshot.error != null -> snapshot.error
             snapshot.running && snapshot.paused -> getString(R.string.paused_reason)
-            snapshot.running && snapshot.stereoRequested &&
-                snapshot.stereoVerified && !snapshot.stereoReal ->
-                getString(R.string.warn_stereo_fake)
             else -> null
         }
         if (warning != null) {
@@ -184,9 +185,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun versionName(): String = try {
-        packageManager.getPackageInfo(packageName, 0).versionName ?: "1.0"
+        packageManager.getPackageInfo(packageName, 0).versionName ?: "1.1"
     } catch (e: PackageManager.NameNotFoundException) {
-        "1.0"
+        "1.1"
     }
 
     companion object {

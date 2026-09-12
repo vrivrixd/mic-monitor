@@ -6,7 +6,6 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
 import android.util.Log
-import kotlin.math.abs
 import kotlin.math.pow
 
 /**
@@ -17,13 +16,21 @@ import kotlin.math.pow
  */
 class AudioEngine(
     private val onPcm: (ByteArray, Int) -> Unit,
-    private val onStereoVerified: (Boolean) -> Unit,
     private val onError: (String) -> Unit
 ) {
 
     /** Ganho em decibeis, alterado a qualquer momento pelo aplicativo ou pela pagina. */
     @Volatile
     var gainDb: Float = 0f
+
+    /**
+     * Troca o lado esquerdo com o direito.
+     *
+     * Vale na hora, sem reabrir o microfone, porque a troca acontece no mesmo laco
+     * que ja empacota cada bloco. Em mono nao faz nada.
+     */
+    @Volatile
+    var swapChannels: Boolean = false
 
     @Volatile
     private var running = false
@@ -39,11 +46,6 @@ class AudioEngine(
 
     /** Identificador da sessao, usado para saber se o sistema nos deu silencio. */
     var sessionId = 0
-        private set
-
-    /** Falso quando o aparelho abriu em estereo mas duplicou o mesmo sinal nos dois canais. */
-    @Volatile
-    var stereoReal = false
         private set
 
     fun isRunning(): Boolean = running
@@ -69,9 +71,6 @@ class AudioEngine(
         val bytes = ByteArray(shorts.size * 2)
 
         running = true
-        stereoReal = false
-        var verifyFramesLeft = if (channels == 2) sampleRate * 2 else 0
-        var sawDifference = false
 
         thread = Thread({
             try {
@@ -88,15 +87,6 @@ class AudioEngine(
                 if (read <= 0) {
                     if (read == AudioRecord.ERROR_INVALID_OPERATION || read == AudioRecord.ERROR_BAD_VALUE) break
                     continue
-                }
-
-                if (verifyFramesLeft > 0) {
-                    if (!sawDifference && channelsDiffer(shorts, read)) sawDifference = true
-                    verifyFramesLeft -= read / channels
-                    if (verifyFramesLeft <= 0) {
-                        stereoReal = sawDifference
-                        onStereoVerified(sawDifference)
-                    }
                 }
 
                 applyGainAndPack(shorts, read, bytes)
@@ -200,30 +190,15 @@ class AudioEngine(
         else -> MediaRecorder.AudioSource.DEFAULT
     }
 
-    /** Procura qualquer diferenca entre os canais esquerdo e direito. */
-    private fun channelsDiffer(buf: ShortArray, count: Int): Boolean {
-        var i = 0
-        while (i + 1 < count) {
-            if (abs(buf[i].toInt() - buf[i + 1].toInt()) > 8) return true
-            i += 2
-        }
-        return false
-    }
-
     /** Aplica o ganho com limite e escreve em little endian. */
     private fun applyGainAndPack(src: ShortArray, count: Int, dst: ByteArray) {
         val factor = 10.0.pow(gainDb / 20.0).toFloat()
+        // A troca de lados le a amostra do canal vizinho, de dois em dois.
+        val swap = swapChannels && channels == 2 && count % 2 == 0
         var j = 0
-        if (factor == 1f) {
-            for (i in 0 until count) {
-                val v = src[i].toInt()
-                dst[j++] = (v and 0xFF).toByte()
-                dst[j++] = ((v shr 8) and 0xFF).toByte()
-            }
-            return
-        }
         for (i in 0 until count) {
-            var v = (src[i] * factor).toInt()
+            val from = if (swap) (if (i % 2 == 0) i + 1 else i - 1) else i
+            var v = if (factor == 1f) src[from].toInt() else (src[from] * factor).toInt()
             if (v > 32767) v = 32767 else if (v < -32768) v = -32768
             dst[j++] = (v and 0xFF).toByte()
             dst[j++] = ((v shr 8) and 0xFF).toByte()

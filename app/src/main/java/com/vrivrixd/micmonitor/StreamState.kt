@@ -11,11 +11,8 @@ object StreamState {
     data class Snapshot(
         val running: Boolean = false,
         val address: String? = null,
-        val clientConnected: Boolean = false,
+        val clientCount: Int = 0,
         val paused: Boolean = false,
-        val stereoRequested: Boolean = false,
-        val stereoReal: Boolean = false,
-        val stereoVerified: Boolean = false,
         val error: String? = null,
         val configRevision: Int = 0
     )

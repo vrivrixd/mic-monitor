@@ -12,6 +12,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
@@ -46,9 +47,10 @@ class SettingsActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         setupPort()
+        setupMultiple()
         setupGain()
         setupMic()
-        setupStereo()
+        setupChannels()
         setupBuffer()
         setupBattery()
 
@@ -72,18 +74,7 @@ class SettingsActivity : AppCompatActivity() {
     // -------------------------------------------------------------------- porta
 
     private fun setupPort() {
-        // O leitor de tela deixa de anunciar contentDescription assim que o campo
-        // tem texto. O rotulo entao vai como dica, que continua sendo anunciada.
-        ViewCompat.setAccessibilityDelegate(binding.portInput, object : AccessibilityDelegateCompat() {
-            override fun onInitializeAccessibilityNodeInfo(
-                host: View,
-                info: AccessibilityNodeInfoCompat
-            ) {
-                super.onInitializeAccessibilityNodeInfo(host, info)
-                info.hintText = getString(R.string.label_port)
-                info.isShowingHintText = binding.portInput.text.isNullOrEmpty()
-            }
-        })
+        labelField(binding.portInput, R.string.label_port)
 
         binding.portInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -107,6 +98,16 @@ class SettingsActivity : AppCompatActivity() {
                 StreamService.applyPreferences(false)
             }
         })
+    }
+
+    // ------------------------------------------------------- varias conexoes
+
+    private fun setupMultiple() {
+        binding.multiCheck.setOnCheckedChangeListener { _, checked ->
+            if (updating) return@setOnCheckedChangeListener
+            prefs.allowMultiple = checked
+            StreamService.applyPreferences(false)
+        }
     }
 
     // -------------------------------------------------------------------- ganho
@@ -142,34 +143,50 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    // ----------------------------------------------------------------- estereo
+    // ------------------------------------------------------------------ canais
 
-    private fun setupStereo() {
-        binding.stereoCheck.setOnCheckedChangeListener { _, checked ->
-            if (updating) return@setOnCheckedChangeListener
-            prefs.stereo = checked
-            binding.micSpinner.isEnabled = !checked
-            StreamService.applyPreferences(false)
+    private fun setupChannels() {
+        binding.channelSpinner.adapter =
+            adapterOf(ChannelMode.ALL.map { getString(ChannelMode.labelRes(it)) })
+        binding.channelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                describe(binding.channelSpinner, R.string.label_channels)
+                if (updating) return
+                val mode = ChannelMode.ALL[position]
+                if (mode == prefs.channelMode) return
+                prefs.channelMode = mode
+                // Em estereo o aparelho escolhe o microfone sozinho.
+                binding.micSpinner.isEnabled = !ChannelMode.wantsStereo(mode)
+                StreamService.applyPreferences(false)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
     }
 
     // ------------------------------------------------------------------ buffer
 
     private fun setupBuffer() {
-        binding.bufferSpinner.adapter =
-            adapterOf(Prefs.BUFFER_OPTIONS.map { getString(Prefs.bufferLabelRes(it)) })
-        binding.bufferSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                describe(binding.bufferSpinner, R.string.label_buffer)
+        labelField(binding.bufferInput, R.string.label_buffer)
+
+        binding.bufferInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable?) {
                 if (updating) return
-                val ms = Prefs.BUFFER_OPTIONS[position]
-                if (ms == prefs.bufferMs) return
-                prefs.bufferMs = ms
+                val value = s?.toString()?.trim()?.toIntOrNull()
+                if (value == null || value < Prefs.MIN_BUFFER_MS || value > Prefs.MAX_BUFFER_MS) {
+                    binding.bufferInput.error = getString(
+                        R.string.error_buffer_range, Prefs.MIN_BUFFER_MS, Prefs.MAX_BUFFER_MS
+                    )
+                    return
+                }
+                binding.bufferInput.error = null
+                if (value == prefs.bufferMs) return
+                prefs.bufferMs = value
                 StreamService.applyPreferences(false)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-        }
+        })
     }
 
     // ------------------------------------------------------------------ bateria
@@ -214,6 +231,25 @@ class SettingsActivity : AppCompatActivity() {
         return adapter
     }
 
+    /**
+     * Nomeia um campo de texto para o leitor de tela.
+     *
+     * O leitor deixa de anunciar contentDescription assim que o campo tem texto.
+     * O rotulo entao vai como dica, que continua sendo anunciada.
+     */
+    private fun labelField(field: EditText, labelRes: Int) {
+        ViewCompat.setAccessibilityDelegate(field, object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(
+                host: View,
+                info: AccessibilityNodeInfoCompat
+            ) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.hintText = getString(labelRes)
+                info.isShowingHintText = field.text.isNullOrEmpty()
+            }
+        })
+    }
+
     /** O nome da opcao e o valor escolhido saem em um anuncio so. */
     private fun describe(spinner: Spinner, labelRes: Int) {
         val value = spinner.selectedItem as? String ?: return
@@ -227,15 +263,19 @@ class SettingsActivity : AppCompatActivity() {
             if (binding.portInput.text?.toString() != portText) {
                 binding.portInput.setText(portText)
             }
+            binding.multiCheck.isChecked = prefs.allowMultiple
             binding.gainSeek.progress = prefs.gainPercent
             binding.micSpinner.setSelection(MicSource.ALL.indexOf(prefs.micSource).coerceAtLeast(0))
-            binding.stereoCheck.isChecked = prefs.stereo
-            binding.micSpinner.isEnabled = !prefs.stereo
-            binding.bufferSpinner.setSelection(
-                Prefs.BUFFER_OPTIONS.indexOf(prefs.bufferMs).coerceAtLeast(0)
+            binding.channelSpinner.setSelection(
+                ChannelMode.ALL.indexOf(prefs.channelMode).coerceAtLeast(0)
             )
+            binding.micSpinner.isEnabled = !ChannelMode.wantsStereo(prefs.channelMode)
+            val bufferText = prefs.bufferMs.toString()
+            if (binding.bufferInput.text?.toString() != bufferText) {
+                binding.bufferInput.setText(bufferText)
+            }
             describe(binding.micSpinner, R.string.label_mic)
-            describe(binding.bufferSpinner, R.string.label_buffer)
+            describe(binding.channelSpinner, R.string.label_channels)
         } finally {
             updating = false
         }

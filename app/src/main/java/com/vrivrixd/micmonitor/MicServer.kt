@@ -13,39 +13,52 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.security.MessageDigest
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Servidor HTTP e WebSocket embarcado.
  *
- * Serve a pagina guardada em assets/web e mantem no maximo um ouvinte por vez.
- * O audio vai em quadros binarios de PCM cru. Os comandos vem em quadros de texto.
+ * Serve a pagina guardada em assets/web. Normalmente aceita um ouvinte por vez, e
+ * aceita varios quando a pessoa liga isso nas configuracoes. O audio vai em quadros
+ * binarios de PCM cru. Os comandos vem em quadros de texto.
  */
 class MicServer(
     private val assets: AssetManager,
     val port: Int,
+    allowMultiple: Boolean,
     private val listener: Listener
 ) {
 
     interface Listener {
-        /** Comando recebido da pagina. */
+        /** Comando recebido de alguma pagina. */
         fun onCommand(command: JSONObject)
 
-        /** Chegada ou saida do unico ouvinte permitido. */
-        fun onClientChanged(connected: Boolean)
+        /** Quantos ouvintes existem agora. */
+        fun onClientCountChanged(count: Int)
 
-        /** Estado atual que a pagina precisa conhecer. */
+        /** Estado atual que as paginas precisam conhecer. */
         fun configJson(): JSONObject
     }
+
+    /** Muda junto com a preferencia, sem precisar reabrir a porta. */
+    @Volatile
+    var allowMultiple: Boolean = allowMultiple
 
     @Volatile
     private var closed = false
 
     private var serverSocket: ServerSocket? = null
-    private val client = AtomicReference<Session?>(null)
 
-    fun hasClient(): Boolean = client.get() != null
+    /** Cada ouvinte tem a fila propria, entao um computador lento nao atrasa os outros. */
+    private val sessions = CopyOnWriteArrayList<Session>()
+
+    fun clientCount(): Int = sessions.size
+
+    fun hasClient(): Boolean = sessions.isNotEmpty()
+
+    /** Verdadeiro quando um recem chegado seria recusado. */
+    fun isBusy(): Boolean = !allowMultiple && sessions.isNotEmpty()
 
     @Throws(IOException::class)
     fun start() {
@@ -58,7 +71,8 @@ class MicServer(
 
     fun stop() {
         closed = true
-        client.getAndSet(null)?.close()
+        for (session in sessions) session.close()
+        sessions.clear()
         try {
             serverSocket?.close()
         } catch (_: IOException) {
@@ -66,16 +80,19 @@ class MicServer(
         serverSocket = null
     }
 
-    /** Envia um bloco de PCM ao ouvinte, se houver. */
+    /** Envia um bloco de PCM a todos os ouvintes. O quadro e montado uma vez so. */
     fun sendPcm(data: ByteArray, length: Int) {
-        client.get()?.enqueue(frame(OP_BINARY, data, length))
+        if (sessions.isEmpty()) return
+        val packet = frame(OP_BINARY, data, length)
+        for (session in sessions) session.enqueue(packet)
     }
 
-    /** Reenvia o estado atual para o ouvinte. */
+    /** Reenvia o estado atual a todos os ouvintes. */
     fun sendConfig() {
-        val session = client.get() ?: return
+        if (sessions.isEmpty()) return
         val text = listener.configJson().toString().toByteArray(Charsets.UTF_8)
-        session.enqueue(frame(OP_TEXT, text, text.size))
+        val packet = frame(OP_TEXT, text, text.size)
+        for (session in sessions) session.enqueue(packet)
     }
 
     private fun acceptLoop(socket: ServerSocket) {
@@ -129,9 +146,9 @@ class MicServer(
 
     private fun serveStatic(output: OutputStream, path: String) {
         if (path == "/status") {
-            // A pagina consulta isto antes de comecar, para saber se a vaga esta livre
-            // sem precisar ocupa-la.
-            val json = JSONObject().put("busy", hasClient()).toString().toByteArray(Charsets.UTF_8)
+            // A pagina consulta isto antes de comecar, para saber se ha vaga sem
+            // precisar ocupar nenhuma.
+            val json = JSONObject().put("busy", isBusy()).toString().toByteArray(Charsets.UTF_8)
             writeResponse(output, "200 OK", "application/json; charset=utf-8", json)
             return
         }
@@ -205,26 +222,41 @@ class MicServer(
 
         val session = Session(socket, output)
 
-        if (!client.compareAndSet(null, session)) {
-            // Apenas um ouvinte por vez. O recem chegado e avisado e desligado.
+        // A entrada na lista acontece de uma vez so, senao dois navegadores que
+        // chegam juntos poderiam passar os dois pela conferencia da vaga.
+        val accepted = synchronized(sessions) {
+            if (isBusy()) {
+                false
+            } else {
+                sessions.add(session)
+                true
+            }
+        }
+        if (!accepted) {
             val busy = JSONObject().put("type", "busy").toString().toByteArray(Charsets.UTF_8)
             session.writeAndClose(frame(OP_TEXT, busy, busy.size))
             return
         }
 
-        listener.onClientChanged(true)
+        listener.onClientCountChanged(sessions.size)
         session.startWriter()
-        sendConfig()
+        sendConfigTo(session)
 
         try {
             readLoop(input, session)
         } catch (e: IOException) {
-            Log.d(TAG, "Leitura do ouvinte encerrada", e)
+            Log.d(TAG, "Leitura de um ouvinte encerrada", e)
         } finally {
-            client.compareAndSet(session, null)
+            sessions.remove(session)
             session.close()
-            listener.onClientChanged(false)
+            listener.onClientCountChanged(sessions.size)
         }
+    }
+
+    /** Estado atual para um ouvinte so, logo que ele entra. */
+    private fun sendConfigTo(session: Session) {
+        val text = listener.configJson().toString().toByteArray(Charsets.UTF_8)
+        session.enqueue(frame(OP_TEXT, text, text.size))
     }
 
     private fun readLoop(input: InputStream, session: Session) {

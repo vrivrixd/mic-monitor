@@ -13,8 +13,8 @@ android {
         targetSdk = 35
         // O numero interno precisa subir a cada envio, senao o Android recusa a
         // atualizacao. O nome visivel continua em 1.0 ate o projeto ficar pronto.
-        versionCode = 10
-        versionName = "1.0"
+        versionCode = 11
+        versionName = "1.1"
     }
 
     // A chave de assinatura nao fica no repositorio. Ela e colocada em

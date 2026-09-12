@@ -55,6 +55,7 @@ class HelpActivity : AppCompatActivity() {
             R.string.help_topic_start to R.string.help_body_start,
             R.string.help_topic_port to R.string.help_body_port,
             R.string.help_topic_controls to R.string.help_body_controls,
+            R.string.help_topic_multi to R.string.help_body_multi,
             R.string.help_topic_buffer to R.string.help_body_buffer,
             R.string.help_topic_output to R.string.help_body_output,
             R.string.help_topic_battery to R.string.help_body_battery

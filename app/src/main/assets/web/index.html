@@ -51,23 +51,19 @@
         </select>
       </div>
 
-      <div class="field checkbox">
-        <input type="checkbox" id="stereo">
-        <label for="stereo" data-i18n="stereo"></label>
+      <div class="field">
+        <label for="channels" data-i18n="channels"></label>
+        <select id="channels">
+          <option value="mono" data-i18n="channelMono"></option>
+          <option value="stereo" data-i18n="channelStereo"></option>
+          <option value="swapped" data-i18n="channelSwapped"></option>
+        </select>
       </div>
 
       <div class="field">
         <label for="buffer" data-i18n="buffer"></label>
-        <select id="buffer">
-          <option value="60" data-i18n="buffer60"></option>
-          <option value="100" data-i18n="buffer100"></option>
-          <option value="150" data-i18n="buffer150"></option>
-          <option value="250" data-i18n="buffer250"></option>
-          <option value="400" data-i18n="buffer400"></option>
-        </select>
+        <input type="number" id="buffer" min="30" max="1000" step="10" value="150">
       </div>
-
-      <p class="hint" id="stereoHint" hidden></p>
 
     </form>
 

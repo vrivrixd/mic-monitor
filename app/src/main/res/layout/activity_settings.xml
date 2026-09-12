@@ -48,6 +48,14 @@
                 android:minHeight="48dp"
                 android:singleLine="true" />
 
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/multiCheck"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:minHeight="48dp"
+                android:text="@string/label_multi" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -80,13 +88,20 @@
                 android:layout_marginTop="4dp"
                 android:minHeight="48dp" />
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/stereoCheck"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:minHeight="48dp"
-                android:text="@string/label_stereo" />
+                android:importantForAccessibility="no"
+                android:text="@string/label_channels"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+            <Spinner
+                android:id="@+id/channelSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:minHeight="48dp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -96,12 +111,17 @@
                 android:text="@string/label_buffer"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-            <Spinner
-                android:id="@+id/bufferSpinner"
+            <EditText
+                android:id="@+id/bufferInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:minHeight="48dp" />
+                android:hint="@string/label_buffer"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="4"
+                android:minHeight="48dp"
+                android:singleLine="true" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/batteryButton"

@@ -4,6 +4,8 @@
 
   var MOBILE = /Android|webOS|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent);
   var DEFAULT_BUFFER_MS = 150;
+  var MIN_BUFFER_MS = 30;
+  var MAX_BUFFER_MS = 1000;
   /* Abaixo desta folga o proximo bloco chegaria tarde demais para tocar. */
   var MIN_LEAD_SEC = 0.02;
   /* Um bloco abaixo deste pico conta como pausa e pode sair sem ninguem ouvir. */
@@ -57,8 +59,7 @@
     gain: document.getElementById('gain'),
     mute: document.getElementById('mute'),
     mic: document.getElementById('mic'),
-    stereo: document.getElementById('stereo'),
-    stereoHint: document.getElementById('stereoHint'),
+    channels: document.getElementById('channels'),
     buffer: document.getElementById('buffer'),
     disconnect: document.getElementById('disconnect')
   };
@@ -326,29 +327,49 @@
     send({ type: 'setSource', source: el.mic.value });
   });
 
-  el.stereo.addEventListener('change', function () {
+  el.channels.addEventListener('change', function () {
     markLocalChange();
-    el.mic.disabled = el.stereo.checked;
-    send({ type: 'setStereo', stereo: el.stereo.checked });
+    /* Em estereo o aparelho escolhe o microfone sozinho. */
+    el.mic.disabled = el.channels.value !== 'mono';
+    send({ type: 'setChannels', mode: el.channels.value });
   });
 
   el.buffer.addEventListener('change', function () {
     markLocalChange();
-    bufferMs = Number(el.buffer.value);
+    var wanted = Math.round(Number(el.buffer.value));
+    if (!isFinite(wanted)) wanted = DEFAULT_BUFFER_MS;
+    /* Fora da faixa util o numero volta para o limite mais proximo. */
+    if (wanted < MIN_BUFFER_MS) wanted = MIN_BUFFER_MS;
+    if (wanted > MAX_BUFFER_MS) wanted = MAX_BUFFER_MS;
+    if (String(wanted) !== el.buffer.value) el.buffer.value = String(wanted);
+    bufferMs = wanted;
     applyBuffer();
     send({ type: 'setBuffer', bufferMs: bufferMs });
   });
 
+  /*
+   * Sair daqui desliga so este navegador. O celular continua transmitindo, e outro
+   * computador pode assumir a vaga. Para voltar a ouvir basta o botao Iniciar.
+   */
   el.disconnect.addEventListener('click', function () {
     shuttingDown = true;
-    send({ type: 'shutdown' });
-    setTimeout(function () {
-      if (ws) { try { ws.close(); } catch (e) {} }
-      teardownAudio();
-      hideEverything();
-      setStatus(t('ended'), false);
-      window.alert(t('alertEnded'));
-    }, 200);
+    if (ws) {
+      /* Sem os tratadores, o fechamento deliberado nao vira aviso de queda. */
+      ws.onclose = null;
+      ws.onerror = null;
+      ws.onmessage = null;
+      try { ws.close(); } catch (e) {}
+    }
+    ws = null;
+    teardownAudio();
+    hideEverything();
+    setStatus(t('ended'), false);
+    window.alert(t('alertEnded'));
+    started = false;
+    shuttingDown = false;
+    config = null;
+    if (!statusTimer) statusTimer = setInterval(checkStatus, 3000);
+    checkStatus();
   });
 
   /* ------------------------------------------------------------------ conexao */
@@ -360,21 +381,14 @@
     if (Date.now() >= suppressUntil) {
       el.gain.value = cfg.gainPercent;
       el.mic.value = cfg.source;
-      el.stereo.checked = cfg.stereo;
+      el.channels.value = cfg.channelMode;
       el.buffer.value = String(cfg.bufferMs);
       if (bufferMs !== cfg.bufferMs) {
         bufferMs = cfg.bufferMs;
         applyBuffer();
       }
     }
-    el.mic.disabled = el.stereo.checked;
-
-    if (cfg.stereo && cfg.stereoKnown && !cfg.stereoReal) {
-      el.stereoHint.textContent = t('stereoHint');
-      el.stereoHint.hidden = false;
-    } else {
-      el.stereoHint.hidden = true;
-    }
+    el.mic.disabled = el.channels.value !== 'mono';
 
     /* Taxa nova do celular pede um contexto novo, para as taxas seguirem iguais. */
     if (!ctx || builtForRate !== cfg.sampleRate) {

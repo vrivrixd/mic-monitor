@@ -35,7 +35,6 @@ class StreamService : Service(), MicServer.Listener {
 
     private var address: String? = null
     private var streamId = 0
-    private var stereoKnown = false
 
     /** Verdadeiro quando outro aplicativo esta gravando e o sistema nos deu silencio. */
     private var micSilenced = false
@@ -77,7 +76,7 @@ class StreamService : Service(), MicServer.Listener {
         address = NetUtils.addressFor(port)
         startForeground(NOTIFICATION_ID, buildNotification())
 
-        val newServer = MicServer(assets, port, this)
+        val newServer = MicServer(assets, port, prefs.allowMultiple, this)
         try {
             newServer.start()
         } catch (e: IOException) {
@@ -104,11 +103,8 @@ class StreamService : Service(), MicServer.Listener {
             it.copy(
                 running = true,
                 address = address,
-                clientConnected = false,
+                clientCount = 0,
                 paused = false,
-                stereoRequested = prefs.stereo,
-                stereoReal = false,
-                stereoVerified = false,
                 error = null
             )
         }
@@ -117,22 +113,17 @@ class StreamService : Service(), MicServer.Listener {
     /** Abre a captura com as preferencias atuais. */
     private fun startEngine(): Boolean {
         engine?.stop()
-        stereoKnown = false
         streamId++
 
         val created = AudioEngine(
             onPcm = { data, length -> server?.sendPcm(data, length) },
-            onStereoVerified = { real ->
-                stereoKnown = true
-                StreamState.update { it.copy(stereoReal = real, stereoVerified = true) }
-                server?.sendConfig()
-            },
             onError = {
                 StreamState.update { it.copy(error = getString(R.string.error_mic_busy)) }
             }
         )
         created.gainDb = prefs.gainDb
-        if (!created.start(prefs.micSource, prefs.stereo)) return false
+        created.swapChannels = ChannelMode.swaps(prefs.channelMode)
+        if (!created.start(prefs.micSource, ChannelMode.wantsStereo(prefs.channelMode))) return false
         engine = created
         return true
     }
@@ -254,23 +245,28 @@ class StreamService : Service(), MicServer.Listener {
 
     /**
      * Reaplica as preferencias enquanto a transmissao roda.
-     * O ganho vale na hora. Trocar microfone, estereo ou porta refaz o que for preciso.
+     *
+     * Ganho, troca de lados e permissao de varias conexoes valem na hora. Trocar o
+     * numero de canais, o microfone ou a porta refaz o que for preciso.
      */
     fun reconfigure() {
         val current = server ?: return
         engine?.gainDb = prefs.gainDb
+        engine?.swapChannels = ChannelMode.swaps(prefs.channelMode)
+        current.allowMultiple = prefs.allowMultiple
 
         if (current.port != prefs.port) {
-            // A porta mudou, entao o endereco muda e o ouvinte precisa reconectar.
+            // A porta mudou, entao o endereco muda e os ouvintes precisam reconectar.
             releaseEverything()
             startStreaming()
             return
         }
 
         val running = engine
+        val wantStereo = ChannelMode.wantsStereo(prefs.channelMode)
         val needsRestart = running == null ||
-            (prefs.stereo && running.channels != 2) ||
-            (!prefs.stereo && running.channels != 1) ||
+            (wantStereo && running.channels != 2) ||
+            (!wantStereo && running.channels != 1) ||
             sourceChanged
 
         if (needsRestart) {
@@ -278,9 +274,6 @@ class StreamService : Service(), MicServer.Listener {
             if (!startEngine()) {
                 StreamState.update { it.copy(error = getString(R.string.error_mic_busy)) }
                 return
-            }
-            StreamState.update {
-                it.copy(stereoRequested = prefs.stereo, stereoReal = false, stereoVerified = false)
             }
         }
         current.sendConfig()
@@ -324,20 +317,19 @@ class StreamService : Service(), MicServer.Listener {
                     reconfigure()
                 }
             }
-            "setStereo" -> {
-                val want = command.optBoolean("stereo", false)
-                if (want != prefs.stereo) {
-                    prefs.stereo = want
+            "setChannels" -> {
+                val mode = command.optString("mode", ChannelMode.MONO)
+                if (mode in ChannelMode.ALL && mode != prefs.channelMode) {
+                    prefs.channelMode = mode
                     StreamState.update { it.copy(configRevision = it.configRevision + 1) }
                     reconfigure()
                 }
             }
-            "shutdown" -> shutdown()
         }
     }
 
-    override fun onClientChanged(connected: Boolean) {
-        StreamState.update { it.copy(clientConnected = connected) }
+    override fun onClientCountChanged(count: Int) {
+        StreamState.update { it.copy(clientCount = count) }
     }
 
     override fun configJson(): JSONObject {
@@ -350,9 +342,7 @@ class StreamService : Service(), MicServer.Listener {
             .put("gainPercent", prefs.gainPercent)
             .put("bufferMs", prefs.bufferMs)
             .put("source", prefs.micSource)
-            .put("stereo", prefs.stereo)
-            .put("stereoKnown", stereoKnown)
-            .put("stereoReal", running?.stereoReal ?: false)
+            .put("channelMode", prefs.channelMode)
             .put("paused", micSilenced)
     }
 

@@ -4,7 +4,7 @@ Streams the audio from your phone microphone to another device over Wi-Fi, with 
 and no audio driver installed on the computer. Listening happens inside the browser.
 
 Unlike similar apps, this one tries to open the microphone in stereo when the device
-supports it, and says so on screen when the stereo is not real.
+supports it, and it can also swap the left and right channels.
 
 ## How to use
 
@@ -14,10 +14,12 @@ supports it, and says so on screen when the stereo is not real.
 4. On the page that opens, click **Start**.
 
 Before that click the page requests no audio and takes no listener slot. After it the sound
-begins and the controls appear. Gain, microphone, stereo, buffer and mute all live on the
-page itself, and changes apply on both sides at once.
+begins and the controls appear. Gain, microphone, audio channels, buffer and mute all live
+on the page itself, and changes apply on both sides at once.
 
-Only one computer listens at a time. Closing the tab frees the slot.
+Only one computer listens at a time. Closing the tab, or pressing **Disconnect** on the
+page, frees the slot without stopping the phone. Settings on the phone can allow several
+computers to listen at the same time.
 
 ## Project status
 
@@ -25,9 +27,10 @@ Only one computer listens at a time. Closing the tab frees the slot.
 | --- | --- |
 | Minimum Android | 7.0 |
 | Format on the wire | 16-bit PCM, 48 kHz |
-| Audio buffer | 60 to 400 ms, adjustable |
+| Audio buffer | 30 to 1000 ms, typed in |
+| Audio channels | mono, stereo, or stereo with the sides swapped |
 | Playback in the browser | chunks scheduled on the audio timeline |
-| Languages | Portuguese (Brazil and Portugal), English, Spanish, French, Italian, German, Arabic, Hindi, Russian, Vietnamese, Japanese, Chinese (Simplified and Traditional) |
+| Languages | English, Portuguese (Brazil and Portugal), Spanish, French, Italian, German, Arabic, Hindi, Russian, Vietnamese, Japanese, Chinese (Simplified and Traditional), Korean, Finnish, Danish, Ukrainian, Czech, Turkish |
 | Sound card selection from the browser | unavailable over a plain connection |
 
 Choosing the output device from the page requires a secure connection, which this version
@@ -121,6 +124,11 @@ gradle assembleRelease
 
 An APK built with your own key is a different application as far as Android is concerned.
 Switching between it and the released builds requires uninstalling first.
+
+## Credits
+
+The Vietnamese translation was reviewed by
+[nguyenninhhoang](https://github.com/nguyenninhhoang), who also translated VBRecorder.
 
 ## Layout
 
