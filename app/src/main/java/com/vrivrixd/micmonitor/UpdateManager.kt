@@ -56,8 +56,8 @@ class UpdateManager(private val activity: AppCompatActivity) {
     private var dialog: AlertDialog? = null
     private var progress: DialogDownloadBinding? = null
 
-    /** Ultimo aviso falado, para nao repetir a cada pedaco que chega. */
-    private var spokenStep = -1
+    /** Ultima porcentagem mostrada, para nao repetir a cada pedaco que chega. */
+    private var shownPercent = -1
 
     /** Versao que espera a permissao de instalar voltar da tela do sistema. */
     private var waiting: Release? = null
@@ -205,7 +205,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
         }
 
         canceled = false
-        spokenStep = -1
+        shownPercent = -1
         showProgress(release)
 
         worker = Thread({
@@ -247,7 +247,8 @@ class UpdateManager(private val activity: AppCompatActivity) {
             val total = if (release.size > 0) release.size else connection.contentLengthLong
             connection.inputStream.use { input ->
                 FileOutputStream(part).use { output ->
-                    val buffer = ByteArray(64 * 1024)
+                    // Em teste os pedacos sao menores, para a porcentagem andar devagar.
+                    val buffer = ByteArray(if (FORCE_DIALOG) 16 * 1024 else 64 * 1024)
                     var got = 0L
                     while (!canceled) {
                         val read = input.read(buffer)
@@ -255,6 +256,7 @@ class UpdateManager(private val activity: AppCompatActivity) {
                         output.write(buffer, 0, read)
                         got += read
                         publish(got, total)
+                        if (!brake()) break
                     }
                     return !canceled && (total <= 0 || got == total)
                 }
@@ -262,6 +264,22 @@ class UpdateManager(private val activity: AppCompatActivity) {
         } finally {
             live = null
             connection.disconnect()
+        }
+    }
+
+    /**
+     * Segura o download no modo de teste.
+     *
+     * Um arquivo pequeno em rede rapida chega antes de a janela poder ser observada.
+     * Devolve falso quando o cancelamento acorda a espera.
+     */
+    private fun brake(): Boolean {
+        if (!FORCE_DIALOG || TEST_DELAY_MS <= 0L) return true
+        return try {
+            Thread.sleep(TEST_DELAY_MS)
+            true
+        } catch (e: InterruptedException) {
+            false
         }
     }
 
@@ -291,17 +309,14 @@ class UpdateManager(private val activity: AppCompatActivity) {
 
     private fun showPercent(percent: Int) {
         val binding = progress ?: return
+        if (percent == shownPercent) return
+        shownPercent = percent
         binding.downloadBar.progress = percent
-        binding.downloadPercent.text = activity.getString(R.string.update_percent, percent)
-        // O numero muda depressa demais para ser falado inteiro. De dez em dez o
-        // leitor de tela acompanha sem atropelar o resto da tela.
-        val step = percent / 10
-        if (step != spokenStep) {
-            spokenStep = step
-            binding.downloadPercent.announceForAccessibility(
-                activity.getString(R.string.update_percent, percent)
-            )
-        }
+        val text = activity.getString(R.string.update_percent, percent)
+        binding.downloadPercent.text = text
+        // De um em um: quem ouve a tela precisa saber exatamente onde o download
+        // esta, e nao so de quanto em quanto ele passa.
+        binding.downloadPercent.announceForAccessibility(text)
     }
 
     /**
@@ -398,6 +413,12 @@ class UpdateManager(private val activity: AppCompatActivity) {
          * Precisa voltar para falso antes de publicar.
          */
         const val FORCE_DIALOG = true
+
+        /**
+         * Espera entre um pedaco e outro enquanto o modo de teste esta ligado.
+         * Com este valor o download inteiro leva perto de meio minuto.
+         */
+        private const val TEST_DELAY_MS = 120L
 
         /** Uma procura por execucao, senao girar a tela traria a janela de volta. */
         @Volatile
