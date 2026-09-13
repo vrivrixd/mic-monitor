@@ -30,7 +30,7 @@ computers to listen at the same time.
 | Audio buffer | 30 to 1000 ms, typed in |
 | Audio channels | mono, stereo, or stereo with the sides swapped |
 | Playback in the browser | chunks scheduled on the audio timeline |
-| Languages | English, Portuguese (Brazil and Portugal), Spanish, French, Italian, German, Arabic, Hindi, Russian, Vietnamese, Japanese, Chinese (Simplified and Traditional), Korean, Finnish, Danish, Ukrainian, Czech, Turkish |
+| Languages | English, Portuguese (Brazil and Portugal), Spanish, French, Italian, German, Arabic, Hindi, Russian, Vietnamese, Japanese, Chinese (Simplified and Traditional), Korean, Finnish, Danish, Ukrainian, Czech, Turkish, Bulgarian, Bengali, Esperanto, Galician, Indonesian, Georgian, Polish, Slovak, Slovenian, Thai, Urdu |
 | Sound card selection from the browser | unavailable over a plain connection |
 
 Choosing the output device from the page requires a secure connection, which this version
@@ -79,7 +79,7 @@ gradle assembleRelease
 The file lands in:
 
 ```
-app/build/outputs/apk/release/MicMonitor-1.1.apk
+app/build/outputs/apk/release/MicMonitor-1.2.apk
 ```
 
 For a debug build, with more talkative logging:
@@ -93,7 +93,7 @@ gradle assembleDebug
 With the device plugged in and USB debugging enabled:
 
 ```
-adb install -r app/build/outputs/apk/release/MicMonitor-1.1.apk
+adb install -r app/build/outputs/apk/release/MicMonitor-1.2.apk
 ```
 
 Without a cable, copy the APK to the phone and open the file there. Android will ask for

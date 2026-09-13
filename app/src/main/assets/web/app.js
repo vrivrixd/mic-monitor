@@ -17,7 +17,7 @@
    */
   var TEXTS = window.MIC_MONITOR_TEXTS || {};
   var BASE_TAG = { pt: 'pt-BR', zh: 'zh-CN', en: 'en' };
-  var RTL = { ar: true };
+  var RTL = { ar: true, ur: true };
 
   function pickLanguage() {
     var wanted = [];

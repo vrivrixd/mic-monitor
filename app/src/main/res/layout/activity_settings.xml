@@ -29,10 +29,15 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!--
+              The label of a text field stops being announced once the field holds
+              text. This one stays reachable by the screen reader, so the name can
+              always be heard right before the field.
+            -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:importantForAccessibility="no"
+                android:importantForAccessibility="yes"
                 android:text="@string/label_port"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
@@ -103,11 +108,12 @@
                 android:layout_marginTop="4dp"
                 android:minHeight="48dp" />
 
+            <!-- Reachable for the same reason as the port label. -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:importantForAccessibility="no"
+                android:importantForAccessibility="yes"
                 android:text="@string/label_buffer"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 

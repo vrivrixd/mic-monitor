@@ -24,4 +24,15 @@
     <locale android:name="uk" />
     <locale android:name="cs" />
     <locale android:name="tr" />
+    <locale android:name="bg" />
+    <locale android:name="bn" />
+    <locale android:name="eo" />
+    <locale android:name="gl" />
+    <locale android:name="id" />
+    <locale android:name="ka" />
+    <locale android:name="pl" />
+    <locale android:name="sk" />
+    <locale android:name="sl" />
+    <locale android:name="th" />
+    <locale android:name="ur" />
 </locale-config>

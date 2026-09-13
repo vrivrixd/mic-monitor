@@ -198,9 +198,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun versionName(): String = try {
-        packageManager.getPackageInfo(packageName, 0).versionName ?: "1.1"
+        packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2"
     } catch (e: PackageManager.NameNotFoundException) {
-        "1.1"
+        "1.2"
     }
 
     companion object {

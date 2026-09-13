@@ -13,8 +13,8 @@ android {
         targetSdk = 35
         // The internal number has to grow on every release, otherwise Android
         // refuses the update. The visible name is what the about screen shows.
-        versionCode = 12
-        versionName = "1.1"
+        versionCode = 13
+        versionName = "1.2"
     }
 
     // The signing key is not kept in the repository. It is placed at
