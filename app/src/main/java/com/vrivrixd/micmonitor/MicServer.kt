@@ -249,7 +249,10 @@ class MicServer(
         } finally {
             sessions.remove(session)
             session.close()
-            listener.onClientCountChanged(sessions.size)
+            // Stopping the server closes the sockets, which is what brings this
+            // thread here. By then there is no stream left to report a count for,
+            // and saying anything would arrive after the state had been cleared.
+            if (!closed) listener.onClientCountChanged(sessions.size)
         }
     }
 
@@ -301,6 +304,7 @@ class MicServer(
     }
 
     private fun handleText(text: String) {
+        if (closed) return
         try {
             listener.onCommand(JSONObject(text))
         } catch (e: Exception) {

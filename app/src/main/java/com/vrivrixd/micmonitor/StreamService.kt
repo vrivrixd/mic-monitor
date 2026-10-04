@@ -27,6 +27,9 @@ import java.io.IOException
 class StreamService : Service(), MicServer.Listener {
 
     private lateinit var prefs: Prefs
+
+    /** Read by the connection threads as well, to tell whether we are still up. */
+    @Volatile
     private var server: MicServer? = null
     private var engine: AudioEngine? = null
 
@@ -295,6 +298,8 @@ class StreamService : Service(), MicServer.Listener {
     }
 
     private fun handleCommand(command: JSONObject) {
+        // A command sent an instant before the stop has nothing left to change.
+        if (server == null) return
         when (command.optString("type")) {
             "setGain" -> {
                 prefs.gainPercent = command.optInt("gainPercent", Prefs.DEFAULT_GAIN_PERCENT)
@@ -331,6 +336,9 @@ class StreamService : Service(), MicServer.Listener {
     }
 
     override fun onClientCountChanged(count: Int) {
+        // This comes from the connection thread, which can wake up after the stream
+        // has already been shut down.
+        if (server == null) return
         StreamState.update { it.copy(clientCount = count) }
     }
 

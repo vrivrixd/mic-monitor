@@ -5,6 +5,14 @@ import androidx.lifecycle.MutableLiveData
 
 /**
  * Observable state of the stream. The service writes it, the screens read it.
+ *
+ * The writes arrive from several threads: the service on the main one, and the
+ * connection threads when a listener joins or leaves. So the current state lives in
+ * a field of its own, guarded by a lock, instead of being read back from the live
+ * data. A posted value only reaches the live data when the main thread gets around
+ * to it, and until then it cannot be read, which let a late write from a dying
+ * connection build on a state that had already been replaced. Stopping the stream
+ * while someone was listening could end up showing the stream as running.
  */
 object StreamState {
 
@@ -20,13 +28,21 @@ object StreamState {
     private val _state = MutableLiveData(Snapshot())
     val state: LiveData<Snapshot> = _state
 
-    val current: Snapshot get() = _state.value ?: Snapshot()
+    private val lock = Any()
+    private var latest = Snapshot()
+
+    val current: Snapshot get() = synchronized(lock) { latest }
 
     fun update(block: (Snapshot) -> Snapshot) {
-        _state.postValue(block(current))
+        // The value travels inside the lock, so the screens see the changes in the
+        // same order in which they happened.
+        synchronized(lock) {
+            latest = block(latest)
+            _state.postValue(latest)
+        }
     }
 
     fun reset(error: String? = null) {
-        _state.postValue(Snapshot(error = error))
+        update { Snapshot(error = error) }
     }
 }
